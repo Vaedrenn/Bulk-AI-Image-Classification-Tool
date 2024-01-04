@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 
+import deepdanbooru as dd
+import numpy as np
+import PIL.Image
 import tensorflow as tf
-
 
 model_path = r'models/deepdanbooru-v3-20211112-sgd-e28/'
 
@@ -32,3 +34,31 @@ def load_labels(model_path) -> list[str]:
         print(f"Error reading labels file: {file_error}")
         return []
     return labels
+
+
+def predict(model, labels, image: PIL.Image.Image, score_threshold: float
+            ) -> tuple[dict[str, float], dict[str, float], str]:
+    _, height, width, _ = model.input_shape
+    image = np.asarray(image)
+    image = tf.image.resize(image,
+                            size=(height, width),
+                            method=tf.image.ResizeMethod.AREA,
+                            preserve_aspect_ratio=True)
+    image = image.numpy()
+    image = dd.image.transform_and_pad_image(image, width, height)
+    image = image / 255.
+    probs = model.predict(image[None, ...])[0]
+    probs = probs.astype(float)
+
+    indices = np.argsort(probs)[::-1]
+    result_all = dict()
+    result_threshold = dict()
+    for index in indices:
+        label = labels[index]
+        prob = probs[index]
+        result_all[label] = prob
+        if prob < score_threshold:
+            break
+        result_threshold[label] = prob
+    result_text = ', '.join(result_all.keys())
+    return result_threshold, result_all, result_text
