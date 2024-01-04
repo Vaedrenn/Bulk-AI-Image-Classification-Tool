@@ -1,0 +1,5 @@
+/dd-image-tagger/
+└── /models/
+    └── /model_name/
+        ├── model-resnet_custom_v3.h5
+        └── tags.txt
