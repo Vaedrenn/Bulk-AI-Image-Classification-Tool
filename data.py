@@ -1,10 +1,16 @@
 from __future__ import annotations
+
+import os
+
 import tensorflow as tf
 
 
+model_path = r'models/deepdanbooru-v3-20211112-sgd-e28/'
+
+
 # loads the model from /models/
-def load_model() -> tf.keras.Model:
-    path = r'models/deepdanbooru-v3-20211112-sgd-e28/model-resnet_custom_v3.h5'
+def load_model(model_path) -> tf.keras.Model:
+    path = os.path.join(model_path, "model-resnet_custom_v3.h5")
     try:
         model = tf.keras.models.load_model(path)
     except FileNotFoundError as file_not_found_error:
@@ -15,9 +21,10 @@ def load_model() -> tf.keras.Model:
         return None
     return model
 
+
 # read tags
-def load_labels() -> list[str]:
-    path = r'models/deepdanbooru-v3-20211112-sgd-e28/tags.txt'
+def load_labels(model_path) -> list[str]:
+    path = os.path.join(model_path, "tags.txt")
     try:
         with open(path) as f:
             labels = [line.strip() for line in f.readlines()]
