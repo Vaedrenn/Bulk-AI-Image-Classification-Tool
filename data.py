@@ -7,12 +7,12 @@ import numpy as np
 import PIL.Image
 import tensorflow as tf
 
-model_path = r'models/deepdanbooru-v3-20211112-sgd-e28/'
-
 
 # loads the model from /models/
 def load_model(model_path) -> tf.keras.Model:
-    path = os.path.join(model_path, "model-resnet_custom_v3.h5")
+    file_name = "model-resnet_custom_v3.h5"
+    path = os.path.join(model_path, file_name)
+
     try:
         model = tf.keras.models.load_model(path)
     except FileNotFoundError as file_not_found_error:
