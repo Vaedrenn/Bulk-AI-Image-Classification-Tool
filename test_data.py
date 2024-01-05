@@ -1,4 +1,5 @@
 import PIL
+import pytest
 
 from data import load_model, load_labels, predict
 import tensorflow as tf
@@ -6,12 +7,23 @@ import tensorflow as tf
 path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
 
+@pytest.fixture
+def model():
+    # Load the model once and provide it as a fixture
+    return load_model(path)
+
+
+@pytest.fixture
+def labels():
+    # Load the labels once and provide them as a fixture
+    return load_labels(path)
+
 def test_load_labels():
-    model = load_model(path)
     assert model is not None
     assert isinstance(model, tf.keras.Model)
 
-
+def test_load_labels():
+    assert labels is not None
 
 def test_predict():
     model = load_model(path)
