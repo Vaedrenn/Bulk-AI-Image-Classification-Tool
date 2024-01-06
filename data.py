@@ -38,27 +38,48 @@ def load_labels(model_path) -> list[str]:
 
 def predict(model, labels, image: PIL.Image.Image, score_threshold: float
             ) -> tuple[dict[str, float], dict[str, float], str]:
+    # Get the input shape of the model (assuming it's a 4D tensor)
     _, height, width, _ = model.input_shape
+
+    # resize image and convert to numpy array
     image = np.asarray(image)
     image = tf.image.resize(image,
                             size=(height, width),
                             method=tf.image.ResizeMethod.AREA,
                             preserve_aspect_ratio=True)
     image = image.numpy()
+
+    # Transform and pad the image using utility function
     image = dd.image.transform_and_pad_image(image, width, height)
+
+    # Normalize pixel values to the range [0, 1]
     image = image / 255.
+
+    # Make a prediction using the model
     probs = model.predict(image[None, ...])[0]
     probs = probs.astype(float)
 
+    # Get the indices of labels sorted by probability in descending order
     indices = np.argsort(probs)[::-1]
+
+    # Initialize dictionaries to store results
     result_all = dict()
     result_threshold = dict()
+
+    # Iterate over the sorted indices
     for index in indices:
         label = labels[index]
         prob = probs[index]
+
+        # Store result for all labels
         result_all[label] = prob
+
+        # If probability is below the threshold, stop adding to threshold results
         if prob < score_threshold:
             break
+
+        # Store result for labels above the threshold
         result_threshold[label] = prob
+
     result_text = ', '.join(result_all.keys())
     return result_threshold, result_all, result_text

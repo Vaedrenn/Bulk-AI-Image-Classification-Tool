@@ -18,12 +18,15 @@ def labels():
     # Load the labels once and provide them as a fixture
     return load_labels(path)
 
+
 def test_load_labels():
     assert model is not None
     assert isinstance(model, tf.keras.Model)
 
+
 def test_load_labels():
     assert labels is not None
+
 
 def test_predict():
     model = load_model(path)
@@ -35,3 +38,7 @@ def test_predict():
     print("Threshold Results:", threshold_results)
     print("All Results:", all_results)
     print("Text:", text)
+
+
+test_load_labels()
+test_predict()
