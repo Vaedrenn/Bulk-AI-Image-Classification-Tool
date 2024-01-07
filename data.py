@@ -37,6 +37,22 @@ def load_labels(model_path) -> list[str]:
     return labels
 
 
+def preprocess_images(model: tf.keras.model, path:os.path, batch_size: int = 32):
+    # Get the input shape of the model (assuming it's a 4D tensor)
+    _, height, width, _ = model.input_shape
+    image_size = (height, width)
+
+    # get all images from path
+    dataset = tf.keras.preprocessing.image_dataset_from_directory(
+        path,
+        image_size=image_size,
+        batch_size=batch_size,
+        method=tf.image.ResizeMethod.AREA,
+        preserve_aspect_ratio=True
+    )
+    return dataset
+
+
 def predict(model, labels, image: PIL.Image.Image, score_threshold: float
             ) -> tuple[dict[str, float], dict[str, float], str]:
     # Get the input shape of the model (assuming it's a 4D tensor)
@@ -84,19 +100,3 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
 
     result_text = ', '.join(result_all.keys())
     return result_threshold, result_all, result_text
-
-
-def predict_all(model, labels, path, score_threshold, batch_size):
-    # Get the input shape of the model (assuming it's a 4D tensor)
-    _, height, width, _ = model.input_shape
-    image_size = (height, width)
-
-    # get all images from path
-    dataset = tf.keras.preprocessing.image_dataset_from_directory(
-        path,
-        image_size=image_size,
-        batch_size=batch_size,
-        method=tf.image.ResizeMethod.AREA,
-        preserve_aspect_ratio=True
-    )
-    all_predictions = []
