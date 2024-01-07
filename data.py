@@ -9,6 +9,7 @@ import tensorflow as tf
 
 
 # loads the model from /models/
+# loading should be done before calling predict
 def load_model(model_path) -> tf.keras.Model:
     file_name = "model-resnet_custom_v3.h5"
     path = os.path.join(model_path, file_name)
@@ -41,13 +42,14 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
     # Get the input shape of the model (assuming it's a 4D tensor)
     _, height, width, _ = model.input_shape
 
-    # resize image and convert to numpy array
-    image = np.asarray(image)
-    image = tf.image.resize(image,
-                            size=(height, width),
-                            method=tf.image.ResizeMethod.AREA,
-                            preserve_aspect_ratio=True)
-    image = image.numpy()
+    # if unprocessed image then resize
+    if image.width > width:
+        image = np.asarray(image)
+        image = tf.image.resize(image,
+                                size=(height, width),
+                                method=tf.image.ResizeMethod.AREA,
+                                preserve_aspect_ratio=True)
+        image = image.numpy()
 
     # Transform and pad the image using utility function
     image = dd.image.transform_and_pad_image(image, width, height)
@@ -62,7 +64,6 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
     # Get the indices of labels sorted by probability in descending order
     indices = np.argsort(probs)[::-1]
 
-    # Initialize dictionaries to store results
     result_all = dict()
     result_threshold = dict()
 
@@ -83,3 +84,19 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
 
     result_text = ', '.join(result_all.keys())
     return result_threshold, result_all, result_text
+
+
+def predict_all(model, labels, path, score_threshold, batch_size):
+    # Get the input shape of the model (assuming it's a 4D tensor)
+    _, height, width, _ = model.input_shape
+    image_size = (height, width)
+
+    # get all images from path
+    dataset = tf.keras.preprocessing.image_dataset_from_directory(
+        path,
+        image_size=image_size,
+        batch_size=batch_size,
+        method=tf.image.ResizeMethod.AREA,
+        preserve_aspect_ratio=True
+    )
+    all_predictions = []
