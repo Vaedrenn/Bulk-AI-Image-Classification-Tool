@@ -10,13 +10,15 @@ path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 @pytest.fixture
 def model():
     # Load the model once and provide it as a fixture
-    return load_model(path)
+    model = load_model(path)
+    return model
 
 
 @pytest.fixture
 def labels():
     # Load the labels once and provide them as a fixture
-    return load_labels(path)
+    labels = load_labels(path)
+    return labels
 
 
 def test_load_labels():
@@ -28,9 +30,7 @@ def test_load_labels():
     assert labels is not None
 
 
-def test_predict():
-    model = load_model(path)
-    labels = load_labels(path)
+def test_predict(model, labels):
     img_path = r'tests/images/post2021_image.jpg'
 
     img = PIL.Image.open(img_path)
@@ -40,5 +40,5 @@ def test_predict():
     print("Text:", text)
 
 
-test_load_labels()
-test_predict()
+
+

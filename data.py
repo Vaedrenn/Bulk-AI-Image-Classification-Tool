@@ -37,7 +37,7 @@ def load_labels(model_path) -> list[str]:
     return labels
 
 
-def preprocess_images(model: tf.keras.model, path:os.path, batch_size: int = 32):
+def process_images(model: tf.keras.model, path:os.path, batch_size: int = 32):
     # Get the input shape of the model (assuming it's a 4D tensor)
     _, height, width, _ = model.input_shape
     image_size = (height, width)
