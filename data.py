@@ -37,20 +37,33 @@ def load_labels(model_path) -> list[str]:
     return labels
 
 
-def process_images(model: tf.keras.model, path:os.path, batch_size: int = 32):
-    # Get the input shape of the model (assuming it's a 4D tensor)
-    _, height, width, _ = model.input_shape
-    image_size = (height, width)
+def process_images_from_directory(model, directory):
+    preprocessed_images = []
+    image_filenames = os.listdir(directory)
 
-    # get all images from path
-    dataset = tf.keras.preprocessing.image_dataset_from_directory(
-        path,
-        image_size=image_size,
-        batch_size=batch_size,
-        method=tf.image.ResizeMethod.AREA,
-        preserve_aspect_ratio=True
-    )
-    return dataset
+    # get dimensions from model
+    _, height, width, _ = model.input_shape
+
+    for filename in image_filenames:
+        image_path = os.path.join(directory, filename)
+        try:
+            # Open the image using PIL
+            image = PIL.Image.open(image_path)
+
+            image = np.asarray(image)
+            image = tf.image.resize(image,
+                                    size=(height, width),
+                                    method=tf.image.ResizeMethod.AREA,
+                                    preserve_aspect_ratio=True)
+            image = image.numpy()
+            image = dd.image.transform_and_pad_image(image, width, height)
+            image = image / 255.
+
+            # Append preprocessed image to the list
+            preprocessed_images.append(image)
+
+        except Exception as e:
+            print(f"Error processing {image_path}: {e}")
 
 
 def predict(model, labels, image: PIL.Image.Image, score_threshold: float
@@ -59,13 +72,13 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
     _, height, width, _ = model.input_shape
 
     # if unprocessed image then resize
-    if image.width > width:
-        image = np.asarray(image)
-        image = tf.image.resize(image,
-                                size=(height, width),
-                                method=tf.image.ResizeMethod.AREA,
-                                preserve_aspect_ratio=True)
-        image = image.numpy()
+    image = np.asarray(image)
+    image = tf.image.resize(image,
+                            size=(height, width),
+                            method=tf.image.ResizeMethod.AREA,
+                            preserve_aspect_ratio=True)
+
+    image = image.numpy()
 
     # Transform and pad the image using utility function
     image = dd.image.transform_and_pad_image(image, width, height)
@@ -100,3 +113,7 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
 
     result_text = ', '.join(result_all.keys())
     return result_threshold, result_all, result_text
+
+
+if __name__ == "__main__":
+    pass
