@@ -37,7 +37,7 @@ def load_labels(model_path) -> list[str]:
     return labels
 
 
-def process_images_from_directory(model, directory):
+def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
     preprocessed_images = []
     image_filenames = os.listdir(directory)
 
@@ -60,10 +60,12 @@ def process_images_from_directory(model, directory):
             image = image / 255.
 
             # Append preprocessed image to the list
-            preprocessed_images.append(image)
+            preprocessed_images.append((filename, image))
 
         except Exception as e:
             print(f"Error processing {image_path}: {e}")
+
+    return preprocessed_images
 
 
 def predict(model, labels, image: PIL.Image.Image, score_threshold: float
