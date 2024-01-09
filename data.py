@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Tuple, Dict, Any
 
 import deepdanbooru as dd
 import numpy as np
@@ -49,7 +50,7 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
         image_path = os.path.join(directory, filename)
         try:
             # Model only supports 3 channels
-            image = PIL.Image.open("image.png").convert('RGB')
+            image = PIL.Image.open(image_path).convert('RGB')
 
             image = np.asarray(image)
             image = tf.image.resize(image,
@@ -69,42 +70,56 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
 
 
 # images need to preprocessed before using
-def predict(model, labels, image: PIL.Image.Image, score_threshold: float
-            ) -> tuple[dict[str, float], dict[str, float], str]:
+def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
+            ) -> tuple[dict[Any, Any], dict[Any, Any], str] | None:
+    try:
+        # Make a prediction using the model
+        probs = model.predict(image[None, ...])[0]
+        probs = probs.astype(float)
 
-    # Make a prediction using the model
-    probs = model.predict(image[None, ...])[0]
-    probs = probs.astype(float)
+        # Get the indices of labels sorted by probability in descending order
+        indices = np.argsort(probs)[::-1]
 
-    # Get the indices of labels sorted by probability in descending order
-    indices = np.argsort(probs)[::-1]
+        result_all = dict()
+        result_threshold = dict()
 
-    result_all = dict()
-    result_threshold = dict()
+        # Iterate over the sorted indices
+        for index in indices:
+            label = labels[index]
+            prob = probs[index]
 
-    # Iterate over the sorted indices
-    for index in indices:
-        label = labels[index]
-        prob = probs[index]
+            # Store result for all labels
+            result_all[label] = prob
 
-        # Store result for all labels
-        result_all[label] = prob
+            # If probability is below the threshold, stop adding to threshold results
+            if prob < score_threshold:
+                break
 
-        # If probability is below the threshold, stop adding to threshold results
-        if prob < score_threshold:
-            break
+            # Store result for labels above the threshold
+            result_threshold[label] = prob
 
-        # Store result for labels above the threshold
-        result_threshold[label] = prob
+        result_text = ', '.join(result_all.keys())
+        return result_threshold, result_all, result_text
 
-    result_text = ', '.join(result_all.keys())
-    return result_threshold, result_all, result_text
+    # unprocessed image
+    except TypeError:
+        print("Images need to be processed before calling this function")
+        return None
+
+    except AttributeError:
+        print("Channels must be 3, use  image = PIL.Image.open(img_path).convert('RGB')")
+        return None
 
 
-def predict_all(model, labels, images: list, score_threshold: float):
+def predict_all(model, labels, directory, score_threshold: float = 0.5):
+    images = process_images_from_directory(model, directory)
+    processed_images = []
+    for image in images:
+        result = predict(model, labels, image[1], score_threshold)
+        if result is not None:
+            processed_images.append((image[0], result))
 
-    return None
-
+    return processed_images
 
 
 if __name__ == "__main__":
