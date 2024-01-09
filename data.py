@@ -37,6 +37,7 @@ def load_labels(model_path) -> list[str]:
     return labels
 
 
+# Preprocesses images from directory
 def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
     preprocessed_images = []
     image_filenames = os.listdir(directory)
@@ -47,8 +48,8 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
     for filename in image_filenames:
         image_path = os.path.join(directory, filename)
         try:
-            # Open the image using PIL
-            image = PIL.Image.open(image_path)
+            # Model only supports 3 channels
+            image = PIL.Image.open("image.png").convert('RGB')
 
             image = np.asarray(image)
             image = tf.image.resize(image,
@@ -59,7 +60,6 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
             image = dd.image.transform_and_pad_image(image, width, height)
             image = image / 255.
 
-            # Append preprocessed image to the list
             preprocessed_images.append((filename, image))
 
         except Exception as e:
@@ -68,25 +68,9 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
     return preprocessed_images
 
 
+# images need to preprocessed before using
 def predict(model, labels, image: PIL.Image.Image, score_threshold: float
             ) -> tuple[dict[str, float], dict[str, float], str]:
-    # Get the input shape of the model (assuming it's a 4D tensor)
-    _, height, width, _ = model.input_shape
-
-    # if unprocessed image then resize
-    image = np.asarray(image)
-    image = tf.image.resize(image,
-                            size=(height, width),
-                            method=tf.image.ResizeMethod.AREA,
-                            preserve_aspect_ratio=True)
-
-    image = image.numpy()
-
-    # Transform and pad the image using utility function
-    image = dd.image.transform_and_pad_image(image, width, height)
-
-    # Normalize pixel values to the range [0, 1]
-    image = image / 255.
 
     # Make a prediction using the model
     probs = model.predict(image[None, ...])[0]
@@ -115,6 +99,12 @@ def predict(model, labels, image: PIL.Image.Image, score_threshold: float
 
     result_text = ', '.join(result_all.keys())
     return result_threshold, result_all, result_text
+
+
+def predict_all(model, labels, images: list, score_threshold: float):
+
+    return None
+
 
 
 if __name__ == "__main__":

@@ -31,14 +31,12 @@ def test_load_labels():
 
 
 def test_predict(model, labels):
-    img_path = r'tests/images/post2021_image.jpg'
+    img_path = r'tests/images/ヒトこもる_花心_97031695_p0.png'
 
-    img = PIL.Image.open(img_path)
+    img = PIL.Image.open(img_path).convert('RGB')
     threshold_results, all_results, text = predict(model, labels, img, 0.5)
     print("Threshold Results:", threshold_results)
     print("All Results:", all_results)
     print("Text:", text)
-
-
 
 
