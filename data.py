@@ -71,17 +71,21 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
 
 # images need to preprocessed before using
 def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
-            ) -> tuple[dict[Any, Any], dict[Any, Any], str] | None:
+            ) -> tuple[dict[Any, Any], dict[Any, Any], dict[Any, Any], str] | None:
     try:
         # Make a prediction using the model
         probs = model.predict(image[None, ...])[0]
         probs = probs.astype(float)
+
+        # Extract the last three tags as ratings
+        rating_labels = labels[-3:]
 
         # Get the indices of labels sorted by probability in descending order
         indices = np.argsort(probs)[::-1]
 
         result_all = dict()
         result_threshold = dict()
+        result_rating = dict()
 
         # Iterate over the sorted indices
         for index in indices:
@@ -98,8 +102,12 @@ def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
             # Store result for labels above the threshold
             result_threshold[label] = prob
 
+            # If the label is in the last three rating labels, store the rating and its probability
+            if label in rating_labels:
+                result_rating[label] = prob
+
         result_text = ', '.join(result_all.keys())
-        return result_threshold, result_all, result_text
+        return result_threshold, result_all, result_rating, result_text
 
     # unprocessed image
     except TypeError:
