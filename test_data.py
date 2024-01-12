@@ -48,8 +48,9 @@ def test_predict(model, labels):
     image = dd.image.transform_and_pad_image(image, width, height)
     image = image / 255.
 
-    threshold_results, all_results, text = predict(model, labels, image, 0.5)
+    threshold_results, all_results, rating, text = predict(model, labels, image, 0.5)
     print("Threshold Results:", threshold_results)
+    print("Rating:", rating)
     print("All Results:", all_results)
     print("Text:", text)
 
@@ -66,4 +67,6 @@ def test_predict_all(model, labels):
     results = predict_all(model, labels, dir, 0.5)
 
     for image in results:
-        print("Image:", image)
+        filename = image[0]
+        threshold_results, all_results, rating_results, text = image[1]
+        print("Image:", filename, " Rating: ", rating_results)
