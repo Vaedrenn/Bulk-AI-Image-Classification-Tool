@@ -79,13 +79,14 @@ def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
 
         # Extract the last three tags as ratings
         rating_labels = labels[-3:]
+        rating_probs = probs[-3:]
+        result_rating = dict(zip(rating_labels, rating_probs))
 
         # Get the indices of labels sorted by probability in descending order
         indices = np.argsort(probs)[::-1]
 
         result_all = dict()
         result_threshold = dict()
-        result_rating = dict()
 
         # Iterate over the sorted indices
         for index in indices:
@@ -101,10 +102,6 @@ def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
 
             # Store result for labels above the threshold
             result_threshold[label] = prob
-
-            # If the label is in the last three rating labels, store the rating and its probability
-            if label in rating_labels:
-                result_rating[label] = prob
 
         result_text = ', '.join(result_all.keys())
         return result_threshold, result_all, result_rating, result_text
