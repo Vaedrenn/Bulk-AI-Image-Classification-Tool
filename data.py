@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, List
 
 import deepdanbooru as dd
 import numpy as np
@@ -71,7 +71,7 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
 
 # images need to preprocessed before using
 def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_threshold: float = 0.5
-            ) -> tuple[dict[Any, Any], dict[Any, Any], dict[Any, Any], str] | None:
+            ) -> tuple[dict[str, float], dict[str, float], dict[str, float], str] | None:
     try:
         # Make a prediction using the model
         probs = model.predict(image[None, ...])[0]
@@ -116,15 +116,24 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
         return None
 
 
-def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.path, score_threshold: float = 0.5):
+# Predicts all images in the directory
+# To unpack:
+#    for image in results:
+#        filename = image[0]
+#        threshold_results, all_results, rating_results, text = image[1]
+def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.path, score_threshold: float = 0.5
+                ) -> list[tuple[Any, tuple[dict[str, float], dict[str, float], dict[str, float], str]]] | None:
     images = process_images_from_directory(model, directory)
     processed_images = []
     for image in images:
         result = predict(model, labels, image[1], score_threshold)
         if result is not None:
             processed_images.append((image[0], result))
-
-    return processed_images
+    if processed_images is not None:
+        return processed_images
+    else:
+        print("No results within threshold: ", score_threshold)
+        return None
 
 
 if __name__ == "__main__":

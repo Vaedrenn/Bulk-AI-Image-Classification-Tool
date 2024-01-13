@@ -74,7 +74,10 @@ def test_predict_all(model, labels):
     for image in results:
         filename = image[0]
         threshold_results, all_results, rating_results, text = image[1]
-        # print("Image:", filename, " Rating: ", rating_results)
+        # print("Threshold Results:", threshold_results)
+        # print("Rating:", rating_results)
+        # print("All Results:", all_results)
+        # print("Text:", text)
         assert threshold_results
         assert all_results
         assert rating_results
@@ -121,5 +124,8 @@ def test_predict_all_ratings(model, labels):
         filename = image[0]
         threshold_results, all_results, rating_results, text = image[1]
         common_keys = set(rating_results.keys()).intersection(threshold_results.keys())
+        # for key in common_keys:
+        #     if threshold_results[key] == rating_results[key]:
+        #         print(f"Key: {key}, Threshold Value: {threshold_results[key]}, Rating Value: {rating_results[key]}")
 
         assert any(threshold_results[key] == rating_results[key] for key in common_keys)
