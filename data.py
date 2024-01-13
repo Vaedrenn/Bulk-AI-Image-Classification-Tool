@@ -11,7 +11,7 @@ import tensorflow as tf
 
 # loads the model from /models/
 # loading should be done before calling predict
-def load_model(model_path) -> tf.keras.Model:
+def load_model(model_path: str | os.path) -> tf.keras.Model:
     file_name = "model-resnet_custom_v3.h5"
     path = os.path.join(model_path, file_name)
 
@@ -27,7 +27,7 @@ def load_model(model_path) -> tf.keras.Model:
 
 
 # read tags
-def load_labels(model_path) -> list[str]:
+def load_labels(model_path: str | os.path) -> list[str]:
     path = os.path.join(model_path, "tags.txt")
     try:
         with open(path) as f:
@@ -39,7 +39,7 @@ def load_labels(model_path) -> list[str]:
 
 
 # Preprocesses images from directory
-def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
+def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
     preprocessed_images = []
     image_filenames = os.listdir(directory)
 
@@ -70,7 +70,7 @@ def process_images_from_directory(model, directory) -> list[(str, np.ndarray)]:
 
 
 # images need to preprocessed before using
-def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
+def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_threshold: float = 0.5
             ) -> tuple[dict[Any, Any], dict[Any, Any], dict[Any, Any], str] | None:
     try:
         # Make a prediction using the model
@@ -116,7 +116,7 @@ def predict(model, labels, image: np.ndarray, score_threshold: float = 0.5
         return None
 
 
-def predict_all(model, labels, directory, score_threshold: float = 0.5):
+def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.path, score_threshold: float = 0.5):
     images = process_images_from_directory(model, directory)
     processed_images = []
     for image in images:
