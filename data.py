@@ -108,7 +108,7 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
 
     # unprocessed image
     except TypeError:
-        print("Images need to be processed before calling this function")
+        print("Images need to be processed before calling this function, Call process_images_from_directory")
         return None
 
     except AttributeError:

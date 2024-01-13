@@ -49,24 +49,33 @@ def test_predict(model, labels):
     image = image / 255.
 
     threshold_results, all_results, rating, text = predict(model, labels, image, 0.5)
-    print("Threshold Results:", threshold_results)
-    print("Rating:", rating)
-    print("All Results:", all_results)
-    print("Text:", text)
+    # print("Threshold Results:", threshold_results)
+    # print("Rating:", rating)
+    # print("All Results:", all_results)
+    # print("Text:", text)
+    assert threshold_results
+    assert rating
+    assert all_results
+    assert text
 
 
 def test_process_all(model, labels):
     dir = r"tests/images"
     images = process_images_from_directory(model, dir)
-    for image in images:
-        print("Image:", image[0])
+    assert images
 
 
 def test_predict_all(model, labels):
     dir = r"tests/images"
     results = predict_all(model, labels, dir, 0.5)
 
+    assert results
+
     for image in results:
         filename = image[0]
         threshold_results, all_results, rating_results, text = image[1]
-        print("Image:", filename, " Rating: ", rating_results)
+        # print("Image:", filename, " Rating: ", rating_results)
+        assert threshold_results
+        assert all_results
+        assert rating_results
+        assert text
