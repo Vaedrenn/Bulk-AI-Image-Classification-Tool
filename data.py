@@ -5,7 +5,7 @@ from typing import Tuple, Dict, Any, List
 
 import deepdanbooru as dd
 import numpy as np
-import PIL.Image
+from PIL import Image, ExifTags
 import tensorflow as tf
 
 
@@ -50,7 +50,7 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
         image_path = os.path.join(directory, filename)
         try:
             # Model only supports 3 channels
-            image = PIL.Image.open(image_path).convert('RGB')
+            image = Image.open(image_path).convert('RGB')
 
             image = np.asarray(image)
             image = tf.image.resize(image,
@@ -134,6 +134,28 @@ def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.pa
     else:
         print("No results within threshold: ", score_threshold)
         return None
+
+
+def write_tags(image_path: str, info: str):
+    # Open the image using PIL
+    with Image.open(image_path) as img:
+        # Get the existing Exif data (if any)
+        exif_data = img.info.get("exif", b"")
+
+        # Convert the Exif data to an ExifTags dictionary
+        exif_dict = {ExifTags.TAGS[key]: exif_data[key] for key in ExifTags.TAGS.keys() if key in exif_data}
+
+        # Set or update the "ImageDescription" tag in the Exif data
+        exif_dict[ExifTags.TAGS["ImageDescription"]] = info
+
+        # Convert the ExifTags dictionary back to Exif data
+        new_exif_data = b"".join(
+            ExifTags.MARKER + bytes([key, 0]) + bytes(value)
+            for key, value in exif_dict.items()
+        )
+
+        # Save the modified Exif data back to the image
+        img.save(image_path, exif=new_exif_data)
 
 
 if __name__ == "__main__":
