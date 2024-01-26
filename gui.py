@@ -1,7 +1,8 @@
 import sys
 
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGroupBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
+    QTextEdit, QLineEdit
 import CheckListWidget
 
 
@@ -33,6 +34,18 @@ class MyGUI(QWidget):
         action_layout.addWidget(selection_frame)
         action_layout.addWidget(slider_frame)
         action_layout.addWidget(button_frame)
+
+        model_input = QLineEdit()
+        model_input.setPlaceholderText("Select model location")
+        dir_input = QLineEdit()
+        dir_input.setPlaceholderText("Select directory")
+        model_button = QPushButton("Browse")
+        dir_button = QPushButton("Browse")
+
+        selection_grid.addWidget(model_input, 0, 0)
+        selection_grid.addWidget(model_button, 0, 1)
+        selection_grid.addWidget(dir_input, 1, 0)
+        selection_grid.addWidget(dir_button, 1, 1)
 
         return action_box
 
