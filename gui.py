@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtGui import QImage, QPixmap, QDoubleValidator
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QRadioButton
 from PyQt5.QtCore import Qt
 import CheckListWidget
 
@@ -15,18 +15,22 @@ def action_box_widget(widget: QWidget) -> QWidget:
     selection_frame = QWidget()
     slider_frame = QWidget()
     button_frame = QWidget()
+    output_frame = QWidget()
 
     selection_grid = QGridLayout()
     slider_grid = QGridLayout()
     button_grid = QGridLayout()
+    output_grid = QGridLayout()
 
     selection_frame.setLayout(selection_grid)
     slider_frame.setLayout(slider_grid)
     button_frame.setLayout(button_grid)
+    output_frame.setLayout(output_grid)
 
     action_layout.addWidget(selection_frame)
     action_layout.addWidget(slider_frame)
     action_layout.addWidget(button_frame)
+    action_layout.addWidget(output_frame)
 
     model_input = QLineEdit()
     model_input.setPlaceholderText("Select model directory...")
@@ -68,8 +72,18 @@ def action_box_widget(widget: QWidget) -> QWidget:
 
     submit_button = QPushButton("Submit")
     reset_button = QPushButton("Reset")
+
+    btn_option_meta = QRadioButton("Write tags to meta data")
+    btn_option_name = QRadioButton("Write tags to file name")
+    one_image_button = QPushButton("Tag Current Image")
+    all_images_button = QPushButton("Tag Selected images")
+
     button_grid.addWidget(submit_button, 0, 0)
     button_grid.addWidget(reset_button, 0, 1)
+    # button_grid.addWidget(btn_option_meta, 1, 0, 1, 2)
+    # button_grid.addWidget(btn_option_name, 2, 0, 1, 2)
+    button_grid.addWidget(one_image_button, 3, 0)
+    button_grid.addWidget(all_images_button, 3, 1)
 
     return action_box
 
@@ -125,6 +139,9 @@ class MyGUI(QWidget):
         rating_tags = CheckListWidget.CheckListWidget()
         character_tags = CheckListWidget.CheckListWidget()
         general_tags = CheckListWidget.CheckListWidget()
+
+        rating_tags.setMaximumHeight(100)
+        character_tags.setMaximumHeight(100)
 
         frame3.layout().addWidget(rating_tags)
         frame3.layout().addWidget(character_tags)
