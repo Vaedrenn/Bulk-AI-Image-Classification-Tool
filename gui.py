@@ -29,9 +29,9 @@ def action_box_widget(widget: QWidget) -> QWidget:
     action_layout.addWidget(button_frame)
 
     model_input = QLineEdit()
-    model_input.setPlaceholderText("Select model location")
+    model_input.setPlaceholderText("Select model directory...")
     dir_input = QLineEdit()
-    dir_input.setPlaceholderText("Select directory")
+    dir_input.setPlaceholderText("Select directory...")
     model_button = QPushButton("Browse")
     dir_button = QPushButton("Browse")
 
@@ -70,6 +70,7 @@ def action_box_widget(widget: QWidget) -> QWidget:
     reset_button = QPushButton("Reset")
     button_grid.addWidget(submit_button, 0, 0)
     button_grid.addWidget(reset_button, 0, 1)
+
     return action_box
 
 
@@ -83,21 +84,31 @@ class MyGUI(QWidget):
 
     def initUI(self):
         # Create labels
-        filelist = CheckListWidget.CheckListWidget()
+        frame1 = QWidget()
         frame2 = QWidget()
         frame3 = QWidget()
 
         # Create layout
         main_layout = QHBoxLayout()
 
-        main_layout.addWidget(filelist)
+        main_layout.addWidget(frame1)
         main_layout.addWidget(frame2)
         main_layout.addWidget(frame3)
 
         # Set main window layout
         self.setLayout(main_layout)
+        frame1.setLayout(QGridLayout())
         frame2.setLayout(QVBoxLayout())
         frame3.setLayout(QVBoxLayout())
+
+        # Frame 1
+        filelist = CheckListWidget.CheckListWidget()
+        select_all = QPushButton("Select All")
+        deselect_all = QPushButton("Deselect All")
+
+        frame1.layout().addWidget(filelist, 0, 0, 1, 2)
+        frame1.layout().addWidget(select_all, 1, 0)
+        frame1.layout().addWidget(deselect_all, 1, 1)
 
         # Frame 2
         image_display = QWidget()
