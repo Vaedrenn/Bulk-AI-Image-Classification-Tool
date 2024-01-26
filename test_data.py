@@ -33,7 +33,7 @@ def test_load_labels():
 
 
 def test_predict(model, labels):
-    img_path = r'tests/images/ヒトこもる_花心_97031695_p0.png'
+    img_path = r'tests/images/post2021_image.jpg'
     _, height, width, _ = model.input_shape
 
     # Model only supports 3 channels
@@ -53,6 +53,7 @@ def test_predict(model, labels):
     # print("Rating:", rating)
     # print("All Results:", all_results)
     # print("Text:", text)
+    # print(len(text))
     assert threshold_results
     assert rating
     assert all_results
