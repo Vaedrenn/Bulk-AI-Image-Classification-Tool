@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtGui import QImage, QPixmap, QDoubleValidator
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider
+    QTextEdit, QLineEdit, QSlider, QSpinBox
 from PyQt5.QtCore import Qt
 import CheckListWidget
 
@@ -52,8 +52,8 @@ class MyGUI(QWidget):
         character_tag = QLabel("Character Tags Threshold")
         general_slider = QSlider(Qt.Horizontal)
         character_slider = QSlider(Qt.Horizontal)
-        general_threshold = QLineEdit()
-        character_threshold = QLineEdit()
+        general_threshold = QSpinBox()
+        character_threshold = QSpinBox()
 
         general_slider.setMinimum(0)
         general_slider.setMaximum(100)
@@ -62,12 +62,17 @@ class MyGUI(QWidget):
         character_slider.setMaximum(100)
         character_slider.setTickInterval(1)
 
+        general_threshold.setMinimum(0)
+        general_threshold.setMaximum(100)
+        character_threshold.setMinimum(0)
+        character_threshold.setMaximum(100)
+
         slider_grid.addWidget(general_tag, 0, 0)
         slider_grid.addWidget(general_threshold, 0, 1)
-        slider_grid.addWidget(general_slider, 1, 0, 1, 2)
+        slider_grid.addWidget(general_slider, 1, 0, 1, 3)
         slider_grid.addWidget(character_tag, 2, 0)
         slider_grid.addWidget(character_threshold, 2, 1)
-        slider_grid.addWidget(character_slider, 3, 0, 1, 2)
+        slider_grid.addWidget(character_slider, 3, 0, 1, 3)
 
         return action_box
 
