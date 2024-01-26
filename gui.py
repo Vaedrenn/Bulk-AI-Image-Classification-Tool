@@ -68,12 +68,16 @@ class MyGUI(QWidget):
         character_threshold.setMaximum(100)
 
         slider_grid.addWidget(general_tag, 0, 0)
-        slider_grid.addWidget(general_threshold, 0, 1)
+        slider_grid.addWidget(general_threshold, 0, 2)
         slider_grid.addWidget(general_slider, 1, 0, 1, 3)
         slider_grid.addWidget(character_tag, 2, 0)
-        slider_grid.addWidget(character_threshold, 2, 1)
+        slider_grid.addWidget(character_threshold, 2, 2)
         slider_grid.addWidget(character_slider, 3, 0, 1, 3)
 
+        submit_button = QPushButton("Submit")
+        reset_button = QPushButton("Reset")
+        button_grid.addWidget(submit_button, 0, 0)
+        button_grid.addWidget(reset_button, 0, 1)
         return action_box
 
     def initUI(self):
