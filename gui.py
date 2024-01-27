@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLa
     QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog
 from PyQt5.QtCore import Qt
 import CheckListWidget
-import actions
 
 
 def action_box_widget(widget: QWidget) -> QWidget:
@@ -39,7 +38,7 @@ def action_box_widget(widget: QWidget) -> QWidget:
     model_button = QPushButton("Browse")
     dir_button = QPushButton("Browse")
 
-    model_button.clicked.connect(lambda value: browse_directory(model_input))
+    model_button.clicked.connect(lambda value: browse_model(model_input))
     dir_button.clicked.connect(lambda value: browse_directory(dir_input))
 
     selection_grid.addWidget(model_input, 0, 0)
@@ -101,7 +100,13 @@ def browse_model(line_edit):
     if not directory_path:
         return
     else:
+        print("importing actions")
+        from actions import load_model, load_labels
+        print("Finished importing actions")
         line_edit.setText(directory_path)
+        model = load_model(directory_path)
+        labels = load_labels(directory_path)
+        return model, labels
 
 
 class MyGUI(QWidget):

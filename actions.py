@@ -16,6 +16,7 @@ def load_model(model_path: str | os.path) -> tf.keras.Model:
     path = os.path.join(model_path, file_name)
 
     try:
+        print("Loading model")
         model = tf.keras.models.load_model(path)
     except FileNotFoundError as file_not_found_error:
         print("Model file not found:", file_not_found_error)
@@ -23,11 +24,13 @@ def load_model(model_path: str | os.path) -> tf.keras.Model:
     except (IOError, OSError) as io_os_error:
         print("Error loading model:", io_os_error)
         return None
+    print("Finished Loading models")
     return model
 
 
 # read tags
 def load_labels(model_path: str | os.path) -> list[str]:
+    print("Loading tags")
     path = os.path.join(model_path, "tags.txt")
     try:
         with open(path) as f:
@@ -35,6 +38,7 @@ def load_labels(model_path: str | os.path) -> list[str]:
     except (FileNotFoundError, IOError, OSError) as file_error:
         print(f"Error reading labels file: {file_error}")
         return []
+    print("Finished Loading tags")
     return labels
 
 
