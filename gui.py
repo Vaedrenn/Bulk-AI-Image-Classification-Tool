@@ -30,7 +30,6 @@ def action_box_widget(widget: QWidget) -> QWidget:
     action_layout.addWidget(selection_frame)
     action_layout.addWidget(slider_frame)
     action_layout.addWidget(button_frame)
-    action_layout.addWidget(output_frame)
 
     model_input = QLineEdit()
     model_input.setPlaceholderText("Select model directory...")
@@ -73,15 +72,11 @@ def action_box_widget(widget: QWidget) -> QWidget:
     submit_button = QPushButton("Submit")
     reset_button = QPushButton("Reset")
 
-    btn_option_meta = QRadioButton("Write tags to meta data")
-    btn_option_name = QRadioButton("Write tags to file name")
     one_image_button = QPushButton("Tag Current Image")
     all_images_button = QPushButton("Tag Selected images")
 
     button_grid.addWidget(submit_button, 0, 0)
     button_grid.addWidget(reset_button, 0, 1)
-    # button_grid.addWidget(btn_option_meta, 1, 0, 1, 2)
-    # button_grid.addWidget(btn_option_name, 2, 0, 1, 2)
     button_grid.addWidget(one_image_button, 3, 0)
     button_grid.addWidget(all_images_button, 3, 1)
 
@@ -125,13 +120,24 @@ class MyGUI(QWidget):
         frame1.layout().addWidget(deselect_all, 1, 1)
 
         # Frame 2
-        image_display = QWidget()
+        image_label_widget = QWidget()
+        image_label_layout = QVBoxLayout(image_label_widget)
+        image_label_layout.setContentsMargins(0, 0, 0, 0)
+        image_label = QLabel(image_label_widget)
+        pixmap = QPixmap("tests/images/post2021_image.jpg")
+
+        image_label.setMaximumSize(450, 400)
+
+        image_label.setPixmap(pixmap)
+        image_label_layout.addWidget(image_label)
 
         action_box = action_box_widget(self)
 
-        text_output = QLabel("text output")
+        text_output = QTextEdit()
+        text_output.setPlaceholderText("Text Output")
+        text_output.setReadOnly(True)
 
-        frame2.layout().addWidget(image_display)
+        frame2.layout().addWidget(image_label_widget)
         frame2.layout().addWidget(action_box)
         frame2.layout().addWidget(text_output)
 
@@ -147,8 +153,10 @@ class MyGUI(QWidget):
         frame3.layout().addWidget(character_tags)
         frame3.layout().addWidget(general_tags)
 
+        # self.setStyleSheet("border: 1px solid black;")
+
         # Set window properties
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(100, 100, 1200, 800)
         self.setWindowTitle('PyQt Horizontal Layout with Labels and Borders')
         self.show()
 
