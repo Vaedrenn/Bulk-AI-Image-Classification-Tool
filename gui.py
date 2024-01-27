@@ -1,10 +1,11 @@
 import sys
 
-from PyQt5.QtGui import QImage, QPixmap, QDoubleValidator
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QRadioButton
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog
 from PyQt5.QtCore import Qt
 import CheckListWidget
+import actions
 
 
 def action_box_widget(widget: QWidget) -> QWidget:
@@ -38,6 +39,9 @@ def action_box_widget(widget: QWidget) -> QWidget:
     model_button = QPushButton("Browse")
     dir_button = QPushButton("Browse")
 
+    model_button.clicked.connect(lambda value: browse_directory(model_input))
+    dir_button.clicked.connect(lambda value: browse_directory(dir_input))
+
     selection_grid.addWidget(model_input, 0, 0)
     selection_grid.addWidget(model_button, 0, 1)
     selection_grid.addWidget(dir_input, 1, 0)
@@ -62,6 +66,9 @@ def action_box_widget(widget: QWidget) -> QWidget:
     character_threshold.setMinimum(0)
     character_threshold.setMaximum(100)
 
+    general_slider.valueChanged.connect(lambda value: general_threshold.setValue(value))
+    character_slider.valueChanged.connect(lambda value: character_threshold.setValue(value))
+
     slider_grid.addWidget(general_tag, 0, 0)
     slider_grid.addWidget(general_threshold, 0, 2)
     slider_grid.addWidget(general_slider, 1, 0, 1, 3)
@@ -81,6 +88,20 @@ def action_box_widget(widget: QWidget) -> QWidget:
     button_grid.addWidget(all_images_button, 3, 1)
 
     return action_box
+
+
+def browse_directory(line_edit):
+    directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
+    if directory_path:
+        line_edit.setText(directory_path)
+
+
+def browse_model(line_edit):
+    directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
+    if not directory_path:
+        return
+    else:
+        line_edit.setText(directory_path)
 
 
 class MyGUI(QWidget):

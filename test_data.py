@@ -2,7 +2,7 @@ import PIL
 import numpy as np
 import pytest
 
-from data import load_model, load_labels, predict, process_images_from_directory, predict_all
+from actions import load_model, load_labels, predict, process_images_from_directory, predict_all
 import tensorflow as tf
 import deepdanbooru as dd
 
