@@ -122,14 +122,15 @@ class MyGUI(QWidget):
         # Frame 2
         image_label_widget = QWidget()
         image_label_layout = QVBoxLayout(image_label_widget)
-        image_label_layout.setContentsMargins(0, 0, 0, 0)
         image_label = QLabel(image_label_widget)
-        pixmap = QPixmap("tests/images/post2021_image.jpg")
 
-        image_label.setMaximumSize(450, 400)
+        pixmap = QPixmap(450, 400)
+        pixmap.fill(Qt.white)  # Fill the pixmap with a white color
+        image_label.setPixmap(pixmap)
 
         image_label.setPixmap(pixmap)
         image_label_layout.addWidget(image_label)
+        image_label.setAlignment(Qt.AlignCenter)
 
         action_box = action_box_widget(self)
 
