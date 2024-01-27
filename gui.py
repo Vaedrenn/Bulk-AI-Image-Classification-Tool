@@ -67,6 +67,8 @@ def action_box_widget(widget: QWidget) -> QWidget:
 
     general_slider.valueChanged.connect(lambda value: general_threshold.setValue(value))
     character_slider.valueChanged.connect(lambda value: character_threshold.setValue(value))
+    general_threshold.valueChanged.connect(lambda value: general_slider.setValue(value))
+    character_threshold.valueChanged.connect(lambda value: character_slider.setValue(value))
 
     slider_grid.addWidget(general_tag, 0, 0)
     slider_grid.addWidget(general_threshold, 0, 2)
@@ -95,7 +97,7 @@ def browse_directory(line_edit):
         line_edit.setText(directory_path)
 
 
-def browse_model(line_edit):
+def browse_model(widget, line_edit):
     directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
     if not directory_path:
         return
@@ -104,9 +106,8 @@ def browse_model(line_edit):
         from actions import load_model, load_labels
         print("Finished importing actions")
         line_edit.setText(directory_path)
-        model = load_model(directory_path)
-        labels = load_labels(directory_path)
-        return model, labels
+        widget.model = load_model(directory_path)
+        widget.labels = load_labels(directory_path)
 
 
 class MyGUI(QWidget):
@@ -114,6 +115,8 @@ class MyGUI(QWidget):
         super().__init__()
         self.images = []
         self.current_image_index = -1
+        self.labels = []
+        self.model = None
 
         self.initUI()
 
