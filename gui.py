@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt
 import CheckListWidget
 
 
-
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
@@ -15,7 +14,7 @@ class MyGUI(QWidget):
         self.current_image_index = -1
         self.labels = []
         self.model = None
-
+        self.action_box = None
         self.initUI()
 
     def initUI(self):
@@ -59,14 +58,14 @@ class MyGUI(QWidget):
         image_label_layout.addWidget(image_label)
         image_label.setAlignment(Qt.AlignCenter)
 
-        action_box = self.action_box_widget()
+        self.action_box = self.action_box_widget()
 
         text_output = QTextEdit()
         text_output.setPlaceholderText("Text Output")
         text_output.setReadOnly(True)
 
         frame2.layout().addWidget(image_label_widget)
-        frame2.layout().addWidget(action_box)
+        frame2.layout().addWidget(self.action_box)
         frame2.layout().addWidget(text_output)
 
         # Frame 3
@@ -160,7 +159,7 @@ class MyGUI(QWidget):
 
         submit_button = QPushButton("Submit")
         reset_button = QPushButton("Reset")
-        submit_button.clicked.connect(lambda value: self.submit(dir_input.text()))
+        submit_button.clicked.connect(lambda value: self.submit(dir_input.text(), general_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
         all_images_button = QPushButton("Tag Selected images")
@@ -189,18 +188,21 @@ class MyGUI(QWidget):
             self.model = load_model(directory_path)
             self.labels = load_labels(directory_path)
 
-    def submit(self, dir):
+    def submit(self, directory, general_threshold):
         if self.model is None:
             return
         if self.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
             return
-        if dir is not None:
+        if directory is None:
             return
         from actions import predict_all
-        score_threshold = self.action_box.general_threshold / 100
+        score_threshold = general_threshold / 100
 
-        results = predict_all(self.model, self.labels, dir, score_threshold)
+        # filename, [threshold_results, all_results, rating_results, text]
+        results = predict_all(self.model, self.labels, directory, score_threshold)
+        self.images = results
+        print(self.images)
 
 
 if __name__ == '__main__':
