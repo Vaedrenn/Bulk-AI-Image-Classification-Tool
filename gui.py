@@ -202,6 +202,7 @@ class MyGUI(QWidget):
         # filename, [threshold_results, all_results, rating_results, text]
         results = predict_all(self.model, self.labels, directory, score_threshold)
         self.images = results
+
     def show_selected_image(self, item):
         try:
             index = self.image_list_widget.row(item)
