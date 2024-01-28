@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent
 import CheckListWidget
 
 
@@ -202,10 +202,85 @@ class MyGUI(QWidget):
         # filename, [threshold_results, all_results, rating_results, text]
         results = predict_all(self.model, self.labels, directory, score_threshold)
         self.images = results
-        for image in results:
-            filename = image[0]
-            threshold_results, all_results, rating_results, text = image[1]
-            print(filename, threshold_results)
+    def show_selected_image(self, item):
+        try:
+            index = self.image_list_widget.row(item)
+            if index != self.current_image_index:
+                self.current_image_index = index
+                image_path = self.images[self.current_image_index]
+                if image_path != "":
+                    self.update_image()
+        except Exception as e:
+            print(e)
+
+    def update_image(self):
+        try:
+            image_path = self.images[self.current_image_index]
+            pixmap = QPixmap(image_path)  # open image as pixmap
+
+            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
+            while self.image_label_layout.count() > 0:
+                self.image_label_layout.takeAt(0).widget().deleteLater()
+
+            image_label = QLabel(self.image_label_widget)
+            image_label.setAlignment(Qt.AlignCenter)
+
+            width = self.image_label_widget.width()
+            height = self.image_label_widget.height() - 31
+
+            # scale down image if it's bigger than the container
+            if pixmap.width() > width or pixmap.height() > height:
+                image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio))
+            else:
+                image_label.setPixmap(pixmap)
+            self.image_label_layout.addWidget(image_label)
+
+            # Update image dimensions label
+            width = pixmap.width()
+            height = pixmap.height()
+            dimensions_text = f"Image Dimensions: {width} x {height}"
+
+            image_info = QLabel(dimensions_text)
+            image_info.setFixedHeight(25)
+            image_info.setAlignment(Qt.AlignCenter)
+            self.image_label_layout.addWidget(image_info)
+
+        except Exception as e:
+            print(e)
+
+    def eventFilter(self, obj, event):
+        # arrow key navigation
+        if obj == self.image_list_widget and event.type() == QEvent.KeyPress:
+            key = event.key()
+            if key == Qt.Key_Up:
+                self.navigate(-1)
+                return True
+            elif key == Qt.Key_Down:
+                self.navigate(1)
+                return True
+
+        return super().eventFilter(obj, event)
+
+    def navigate(self, direction):
+        try:
+            new_index = self.current_image_index + direction
+            if 0 <= new_index < len(self.images):
+                self.current_image_index = new_index
+                self.image_list_widget.setCurrentIndex(self.image_list_widget.model().index(new_index, 0))
+                image_path = self.images[self.current_image_index]
+                if image_path != '':
+                    self.update_image()
+                else:
+                    self.navigate(direction)  # skip spacers
+
+        except Exception as E:
+            print(E)
+
+    def showEvent(self, event):
+        self.image_list_widget.installEventFilter(self)
+
+    def hideEvent(self, event):
+        self.image_list_widget.removeEventFilter(self)
 
 
 if __name__ == '__main__':
