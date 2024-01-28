@@ -84,6 +84,8 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
         # Extract the last three tags as ratings
         rating_labels = labels[-3:]
         rating_probs = probs[-3:]
+        labels = labels[:-3]
+        probs = probs[:-3]
         result_rating = dict(zip(rating_labels, rating_probs))
 
         # Get the indices of labels sorted by probability in descending order

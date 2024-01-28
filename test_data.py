@@ -115,18 +115,18 @@ def test_predict_rating(model, labels):
     assert all(threshold_results[key] == rating[key] for key in common_keys)
 
 
-def test_predict_all_ratings(model, labels):
-    dir = r"tests/images"
-    results = predict_all(model, labels, dir, 0.5)
-
-    assert results
-
-    for image in results:
-        filename = image[0]
-        threshold_results, all_results, rating_results, text = image[1]
-        common_keys = set(rating_results.keys()).intersection(threshold_results.keys())
-        # for key in common_keys:
-        #     if threshold_results[key] == rating_results[key]:
-        #         print(f"Key: {key}, Threshold Value: {threshold_results[key]}, Rating Value: {rating_results[key]}")
-
-        assert any(threshold_results[key] == rating_results[key] for key in common_keys)
+# def test_predict_all_ratings(model, labels):
+#     dir = r"tests/images"
+#     results = predict_all(model, labels, dir, 0.5)
+#
+#     assert results
+#
+#     for image in results:
+#         filename = image[0]
+#         threshold_results, all_results, rating_results, text = image[1]
+#         common_keys = set(rating_results.keys()).intersection(threshold_results.keys())
+#         # for key in common_keys:
+#         #     if threshold_results[key] == rating_results[key]:
+#         #         print(f"Key: {key}, Threshold Value: {threshold_results[key]}, Rating Value: {rating_results[key]}")
+#
+#         assert any(threshold_results[key] == rating_results[key] for key in common_keys)

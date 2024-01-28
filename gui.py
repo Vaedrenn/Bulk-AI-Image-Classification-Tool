@@ -202,7 +202,10 @@ class MyGUI(QWidget):
         # filename, [threshold_results, all_results, rating_results, text]
         results = predict_all(self.model, self.labels, directory, score_threshold)
         self.images = results
-        print(self.images)
+        for image in results:
+            filename = image[0]
+            threshold_results, all_results, rating_results, text = image[1]
+            print(filename, threshold_results)
 
 
 if __name__ == '__main__':
