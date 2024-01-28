@@ -38,7 +38,7 @@ def action_box_widget(widget: QWidget) -> QWidget:
     model_button = QPushButton("Browse")
     dir_button = QPushButton("Browse")
 
-    model_button.clicked.connect(lambda value: browse_model(model_input))
+    model_button.clicked.connect(lambda value: browse_model(widget, model_input))
     dir_button.clicked.connect(lambda value: browse_directory(dir_input))
 
     selection_grid.addWidget(model_input, 0, 0)
@@ -108,7 +108,6 @@ def browse_model(widget, line_edit):
         line_edit.setText(directory_path)
         widget.model = load_model(directory_path)
         widget.labels = load_labels(directory_path)
-
 
 class MyGUI(QWidget):
     def __init__(self):
