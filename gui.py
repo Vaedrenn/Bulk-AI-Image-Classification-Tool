@@ -43,6 +43,7 @@ class MyGUI(QWidget):
         self.filelist = CheckListWidget.CheckListWidget()
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
+        self.filelist.itemClicked.connect(self.show_selected_image)  # on click change image
 
         frame1.layout().addWidget(self.filelist, 0, 0, 1, 2)
         frame1.layout().addWidget(select_all, 1, 0)
@@ -84,11 +85,6 @@ class MyGUI(QWidget):
         frame3.layout().addWidget(general_tags)
 
         # self.setStyleSheet("border: 1px solid black;")
-        if self.filelist is None:
-            print("still none")
-        else:
-            print("filelist is not none wtf")
-            self.filelist.clear()
 
         # Set window properties
         self.setGeometry(100, 100, 1200, 800)
@@ -226,6 +222,54 @@ class MyGUI(QWidget):
             threshold_results, _, rating_results, text = image[1]
             self.filelist.addItem(filename)
             self.images.append((threshold_results, rating_results, text))
+
+    # On click change to the selected image
+    def show_selected_image(self, item):
+        try:
+            # if the clicked image is
+            index = self.filelist.row(item)
+            if index != self.current_image_index:
+                self.current_image_index = index
+                image_path = self.images[self.current_image_index]
+                if image_path != "":
+                    self.update_image()
+        except Exception as e:
+            print(e)
+
+    def update_image(self):
+        try:
+            image_path = self.filelist.item(self.current_image_index).text()
+            pixmap = QPixmap(image_path)  # open image as pixmap
+
+            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
+            while self.image_label_layout.count() > 0:
+                self.image_label_layout.takeAt(0).widget().deleteLater()
+
+            image_label = QLabel(self.image_label_widget)
+            image_label.setAlignment(Qt.AlignCenter)
+
+            width = self.image_label_widget.width()
+            height = self.image_label_widget.height() - 31
+
+            # scale down image if it's bigger than the container
+            if pixmap.width() > width or pixmap.height() > height:
+                image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio))
+            else:
+                image_label.setPixmap(pixmap)
+            self.image_label_layout.addWidget(image_label)
+
+            # Update image dimensions label
+            width = pixmap.width()
+            height = pixmap.height()
+            dimensions_text = f"Image Dimensions: {width} x {height}"
+
+            image_info = QLabel(dimensions_text)
+            image_info.setFixedHeight(25)
+            image_info.setAlignment(Qt.AlignCenter)
+            self.image_label_layout.addWidget(image_info)
+
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
