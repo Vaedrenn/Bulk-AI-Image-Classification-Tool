@@ -65,7 +65,7 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
             image = dd.image.transform_and_pad_image(image, width, height)
             image = image / 255.
 
-            preprocessed_images.append((filename, image))
+            preprocessed_images.append((image_path, image))
 
         except Exception as e:
             print(f"Error processing {image_path}: {e}")
