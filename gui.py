@@ -157,6 +157,8 @@ class MyGUI(QWidget):
         character_slider.valueChanged.connect(lambda value: character_threshold.setValue(value))
         general_threshold.valueChanged.connect(lambda value: general_slider.setValue(value))
         character_threshold.valueChanged.connect(lambda value: character_slider.setValue(value))
+        general_threshold.setValue(50)
+        character_threshold.setValue(85)
 
         slider_grid.addWidget(general_tag, 0, 0)
         slider_grid.addWidget(general_threshold, 0, 2)
@@ -223,6 +225,7 @@ class MyGUI(QWidget):
             filename = image[0]
             threshold_results, _, rating_results, text = image[1]
             self.filelist.addItem(filename)
+            self.images.append((threshold_results, rating_results, text))
 
 
 if __name__ == '__main__':
