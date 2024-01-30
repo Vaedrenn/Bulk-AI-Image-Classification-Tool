@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt, QEvent
 import CheckListWidget
 
@@ -10,11 +10,14 @@ import CheckListWidget
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.image_label_layout = None
+        self.image_label_widget = None
         self.images = []
         self.current_image_index = -1
         self.labels = []
         self.model = None
         self.action_box = None
+        self.filelist = None
         self.initUI()
 
     def initUI(self):
@@ -37,25 +40,25 @@ class MyGUI(QWidget):
         frame3.setLayout(QVBoxLayout())
 
         # Frame 1
-        filelist = CheckListWidget.CheckListWidget()
+        self.filelist = CheckListWidget.CheckListWidget()
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
 
-        frame1.layout().addWidget(filelist, 0, 0, 1, 2)
+        frame1.layout().addWidget(self.filelist, 0, 0, 1, 2)
         frame1.layout().addWidget(select_all, 1, 0)
         frame1.layout().addWidget(deselect_all, 1, 1)
 
         # Frame 2
-        image_label_widget = QWidget()
-        image_label_layout = QVBoxLayout(image_label_widget)
-        image_label = QLabel(image_label_widget)
+        self.image_label_widget = QWidget()
+        self.image_label_layout = QVBoxLayout(self.image_label_widget)
+        image_label = QLabel(self.image_label_widget)
 
         pixmap = QPixmap(450, 400)
         pixmap.fill(Qt.white)  # Fill the pixmap with a white color
         image_label.setPixmap(pixmap)
 
         image_label.setPixmap(pixmap)
-        image_label_layout.addWidget(image_label)
+        self.image_label_layout.addWidget(image_label)
         image_label.setAlignment(Qt.AlignCenter)
 
         self.action_box = self.action_box_widget()
@@ -64,7 +67,7 @@ class MyGUI(QWidget):
         text_output.setPlaceholderText("Text Output")
         text_output.setReadOnly(True)
 
-        frame2.layout().addWidget(image_label_widget)
+        frame2.layout().addWidget(self.image_label_widget)
         frame2.layout().addWidget(self.action_box)
         frame2.layout().addWidget(text_output)
 
@@ -81,6 +84,11 @@ class MyGUI(QWidget):
         frame3.layout().addWidget(general_tags)
 
         # self.setStyleSheet("border: 1px solid black;")
+        if self.filelist is None:
+            print("still none")
+        else:
+            print("filelist is not none wtf")
+            self.filelist.clear()
 
         # Set window properties
         self.setGeometry(100, 100, 1200, 800)
@@ -175,6 +183,7 @@ class MyGUI(QWidget):
         directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
         if directory_path:
             line_edit.setText(directory_path)
+            return directory_path
 
     def browse_model(self, line_edit):
         directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
@@ -187,6 +196,7 @@ class MyGUI(QWidget):
             line_edit.setText(directory_path)
             self.model = load_model(directory_path)
             self.labels = load_labels(directory_path)
+            return directory_path
 
     def submit(self, directory, general_threshold):
         if self.model is None:
@@ -201,87 +211,18 @@ class MyGUI(QWidget):
 
         # filename, [threshold_results, all_results, rating_results, text]
         results = predict_all(self.model, self.labels, directory, score_threshold)
-        self.images = results
 
-    def show_selected_image(self, item):
-        try:
-            index = self.image_list_widget.row(item)
-            if index != self.current_image_index:
-                self.current_image_index = index
-                image_path = self.images[self.current_image_index]
-                if image_path != "":
-                    self.update_image()
-        except Exception as e:
-            print(e)
+        if len(results) == 0 or results is None:
+            QMessageBox.information(self, " ", "No duplicate images were found.")
+            return
 
-    def update_image(self):
-        try:
-            image_path = self.images[self.current_image_index]
-            pixmap = QPixmap(image_path)  # open image as pixmap
-
-            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
-            while self.image_label_layout.count() > 0:
-                self.image_label_layout.takeAt(0).widget().deleteLater()
-
-            image_label = QLabel(self.image_label_widget)
-            image_label.setAlignment(Qt.AlignCenter)
-
-            width = self.image_label_widget.width()
-            height = self.image_label_widget.height() - 31
-
-            # scale down image if it's bigger than the container
-            if pixmap.width() > width or pixmap.height() > height:
-                image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio))
-            else:
-                image_label.setPixmap(pixmap)
-            self.image_label_layout.addWidget(image_label)
-
-            # Update image dimensions label
-            width = pixmap.width()
-            height = pixmap.height()
-            dimensions_text = f"Image Dimensions: {width} x {height}"
-
-            image_info = QLabel(dimensions_text)
-            image_info.setFixedHeight(25)
-            image_info.setAlignment(Qt.AlignCenter)
-            self.image_label_layout.addWidget(image_info)
-
-        except Exception as e:
-            print(e)
-
-    def eventFilter(self, obj, event):
-        # arrow key navigation
-        if obj == self.image_list_widget and event.type() == QEvent.KeyPress:
-            key = event.key()
-            if key == Qt.Key_Up:
-                self.navigate(-1)
-                return True
-            elif key == Qt.Key_Down:
-                self.navigate(1)
-                return True
-
-        return super().eventFilter(obj, event)
-
-    def navigate(self, direction):
-        try:
-            new_index = self.current_image_index + direction
-            if 0 <= new_index < len(self.images):
-                self.current_image_index = new_index
-                self.image_list_widget.setCurrentIndex(self.image_list_widget.model().index(new_index, 0))
-                image_path = self.images[self.current_image_index]
-                if image_path != '':
-                    self.update_image()
-                else:
-                    self.navigate(direction)  # skip spacers
-
-        except Exception as E:
-            print(E)
-
-    def showEvent(self, event):
-        self.image_list_widget.installEventFilter(self)
-
-    def hideEvent(self, event):
-        self.image_list_widget.removeEventFilter(self)
+        # Populate filelist
+        self.images = []
+        self.filelist.clear()
+        for image in results:
+            filename = image[0]
+            threshold_results, _, rating_results, text = image[1]
+            self.filelist.addItem(filename)
 
 
 if __name__ == '__main__':
