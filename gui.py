@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PyQt5.QtGui import QPixmap
@@ -6,14 +7,19 @@ from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLa
 from PyQt5.QtCore import Qt, QEvent
 import CheckListWidget
 
+from PyQt5.QtWidgets import QListWidgetItem
+
+FILE_PATH = Qt.UserRole
+GENERAL_RESULTS = Qt.UserRole + 1
+RATING = Qt.UserRole + 2
+TEXT = Qt.UserRole + 3
+
 
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
         self.image_label_layout = None
         self.image_label_widget = None
-        self.images = []
-        self.current_image_index = -1
         self.labels = []
         self.model = None
         self.action_box = None
@@ -43,7 +49,7 @@ class MyGUI(QWidget):
         self.filelist = CheckListWidget.CheckListWidget()
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
-        self.filelist.itemClicked.connect(self.show_selected_image)  # on click change image
+        self.filelist.itemClicked.connect(self.update_image)  # on click change image
 
         frame1.layout().addWidget(self.filelist, 0, 0, 1, 2)
         frame1.layout().addWidget(select_all, 1, 0)
@@ -215,30 +221,22 @@ class MyGUI(QWidget):
             return
 
         # Populate filelist
-        self.images = []
         self.filelist.clear()
         for image in results:
-            filename = image[0]
+            file_path = image[0]
             threshold_results, _, rating_results, text = image[1]
-            self.filelist.addItem(filename)
-            self.images.append((threshold_results, rating_results, text))
+            filename = os.path.basename(file_path)
+            item = QListWidgetItem(filename)
+            item.setData(FILE_PATH, file_path)
+            item.setData(GENERAL_RESULTS, threshold_results)
+            item.setData(RATING, rating_results)
+            item.setData(TEXT, text)
 
-    # On click change to the selected image
-    def show_selected_image(self, item):
-        try:
-            # if the clicked image is
-            index = self.filelist.row(item)
-            if index != self.current_image_index:
-                self.current_image_index = index
-                image_path = self.images[self.current_image_index]
-                if image_path != "":
-                    self.update_image()
-        except Exception as e:
-            print(e)
+            self.filelist.addItem(item)
 
     def update_image(self):
         try:
-            image_path = self.filelist.item(self.current_image_index).text()
+            image_path = self.filelist.currentItem().data(FILE_PATH)
             pixmap = QPixmap(image_path)  # open image as pixmap
 
             # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
@@ -260,7 +258,6 @@ class MyGUI(QWidget):
 
         except Exception as e:
             print(e)
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

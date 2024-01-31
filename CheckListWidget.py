@@ -8,8 +8,7 @@ class CheckListWidget(QListWidget):
         super().__init__()
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
 
-    def addItem(self, item_text):
-        item = QListWidgetItem(item_text)
+    def addItem(self, item):
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # Adds checkboxes
         item.setCheckState(Qt.Unchecked)
         QListWidget.addItem(self, item)  # use QListWidget's addItem
