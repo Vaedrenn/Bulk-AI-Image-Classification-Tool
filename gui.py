@@ -249,7 +249,7 @@ class MyGUI(QWidget):
             image_label.setAlignment(Qt.AlignCenter)
 
             width = self.image_label_widget.width()
-            height = self.image_label_widget.height() - 31
+            height = self.image_label_widget.height()
 
             # scale down image if it's bigger than the container
             if pixmap.width() > width or pixmap.height() > height:
@@ -257,16 +257,6 @@ class MyGUI(QWidget):
             else:
                 image_label.setPixmap(pixmap)
             self.image_label_layout.addWidget(image_label)
-
-            # Update image dimensions label
-            width = pixmap.width()
-            height = pixmap.height()
-            dimensions_text = f"Image Dimensions: {width} x {height}"
-
-            image_info = QLabel(dimensions_text)
-            image_info.setFixedHeight(25)
-            image_info.setAlignment(Qt.AlignCenter)
-            self.image_label_layout.addWidget(image_info)
 
         except Exception as e:
             print(e)
