@@ -60,7 +60,7 @@ class MyGUI(QWidget):
         self.image_label_layout = QVBoxLayout(self.image_label_widget)
         image_label = QLabel(self.image_label_widget)
 
-        pixmap = QPixmap(450, 400)
+        pixmap = QPixmap(450, 450)
         pixmap.fill(Qt.white)  # Fill the pixmap with a white color
         image_label.setPixmap(pixmap)
 
@@ -180,7 +180,6 @@ class MyGUI(QWidget):
         button_grid.addWidget(reset_button, 0, 1)
         button_grid.addWidget(one_image_button, 3, 0)
         button_grid.addWidget(all_images_button, 3, 1)
-
         return action_box
 
     def browse_directory(self, line_edit):
@@ -239,15 +238,15 @@ class MyGUI(QWidget):
             image_path = self.filelist.currentItem().data(FILE_PATH)
             pixmap = QPixmap(image_path)  # open image as pixmap
 
-            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
-            while self.image_label_layout.count() > 0:
-                self.image_label_layout.takeAt(0).widget().deleteLater()
-
             image_label = QLabel(self.image_label_widget)
             image_label.setAlignment(Qt.AlignCenter)
 
-            width = self.image_label_widget.width()
-            height = self.image_label_widget.height()
+            width = 450
+            height = 450
+
+            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
+            while self.image_label_layout.count() > 0:
+                self.image_label_layout.takeAt(0).widget().deleteLater()
 
             # scale down image if it's bigger than the container
             if pixmap.width() > width or pixmap.height() > height:
@@ -258,6 +257,7 @@ class MyGUI(QWidget):
 
         except Exception as e:
             print(e)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
