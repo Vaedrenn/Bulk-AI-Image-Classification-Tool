@@ -10,14 +10,18 @@ import CheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
 
 FILE_PATH = Qt.UserRole
-GENERAL_RESULTS = Qt.UserRole + 1
-RATING = Qt.UserRole + 2
-TEXT = Qt.UserRole + 3
+RATING = Qt.UserRole + 1
+CHARACTER_RESULTS = Qt.UserRole +2
+GENERAL_RESULTS = Qt.UserRole + 3
+TEXT = Qt.UserRole + 4
 
 
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.general_tags = None
+        self.character_tags = None
+        self.rating_tags = None
         self.image_label_layout = None
         self.image_label_widget = None
         self.labels = []
@@ -49,7 +53,7 @@ class MyGUI(QWidget):
         self.filelist = CheckListWidget.CheckListWidget()
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
-        self.filelist.itemClicked.connect(self.update_image)  # on click change image
+        self.filelist.itemClicked.connect(self.update_page)  # on click change image
 
         frame1.layout().addWidget(self.filelist, 0, 0, 1, 2)
         frame1.layout().addWidget(select_all, 1, 0)
@@ -79,16 +83,16 @@ class MyGUI(QWidget):
         frame2.layout().addWidget(text_output)
 
         # Frame 3
-        rating_tags = CheckListWidget.CheckListWidget()
-        character_tags = CheckListWidget.CheckListWidget()
-        general_tags = CheckListWidget.CheckListWidget()
+        self.rating_tags = CheckListWidget.CheckListWidget()
+        self.character_tags = CheckListWidget.CheckListWidget()
+        self.general_tags = CheckListWidget.CheckListWidget()
 
-        rating_tags.setMaximumHeight(100)
-        character_tags.setMaximumHeight(100)
+        self.rating_tags.setMaximumHeight(100)
+        self.character_tags.setMaximumHeight(100)
 
-        frame3.layout().addWidget(rating_tags)
-        frame3.layout().addWidget(character_tags)
-        frame3.layout().addWidget(general_tags)
+        frame3.layout().addWidget(self.rating_tags)
+        frame3.layout().addWidget(self.character_tags)
+        frame3.layout().addWidget(self.general_tags)
 
         # self.setStyleSheet("border: 1px solid black;")
 
@@ -233,6 +237,16 @@ class MyGUI(QWidget):
 
             self.filelist.addItem(item)
 
+    def update_page(self):
+        current_item = self.filelist.currentItem()
+        rating = current_item.data(RATING)
+        character_tags = current_item.data(CHARACTER_RESULTS)
+        general_tags = current_item.data(GENERAL_RESULTS)
+        self.update_image()
+        self.update_tags(self.rating_tags, rating)
+        self.update_tags(self.character_tags, character_tags)
+        self.update_tags(self.general_tags, general_tags)
+
     def update_image(self):
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
@@ -257,6 +271,16 @@ class MyGUI(QWidget):
 
         except Exception as e:
             print(e)
+
+    def update_tags(self, checklist, tags):
+        checklist.clear()
+        if tags is None:
+            return
+
+        for tag_name, value in tags.items():
+            percentage = f"{value * 100:.2f}%"  # Format value as percentage
+            item = QListWidgetItem(f"{tag_name:<20}{percentage:>10}")  # Adjust the spacing as needed
+            checklist.addItem(item)
 
 
 if __name__ == '__main__':
