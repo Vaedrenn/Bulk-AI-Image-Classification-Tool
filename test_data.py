@@ -75,7 +75,7 @@ def test_predict_all(model, labels):
     for image in results:
         filename = image[0]
         threshold_results, all_results, rating_results, text = image[1]
-        # print("Threshold Results:", threshold_results)
+        print("Threshold Results:", threshold_results)
         # print("Rating:", rating_results)
         # print("All Results:", all_results)
         # print("Text:", text)

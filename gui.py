@@ -1,5 +1,6 @@
 import os
 import sys
+from collections import OrderedDict
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
@@ -228,6 +229,7 @@ class MyGUI(QWidget):
         for image in results:
             file_path = image[0]
             threshold_results, _, rating_results, text = image[1]
+            threshold_results = threshold_results
             filename = os.path.basename(file_path)
             item = QListWidgetItem(filename)
             item.setData(FILE_PATH, file_path)

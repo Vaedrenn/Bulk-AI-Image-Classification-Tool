@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections import OrderedDict
 from typing import Tuple, Dict, Any, List
 
 import deepdanbooru as dd
@@ -86,13 +87,13 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
         rating_probs = probs[-3:]
         labels = labels[:-3]
         probs = probs[:-3]
-        result_rating = dict(zip(rating_labels, rating_probs))
+        result_rating = OrderedDict(zip(rating_labels, rating_probs))
 
         # Get the indices of labels sorted by probability in descending order
         indices = np.argsort(probs)[::-1]
 
-        result_all = dict()
-        result_threshold = dict()
+        result_all = OrderedDict()
+        result_threshold = OrderedDict()
 
         # Iterate over the sorted indices
         for index in indices:
