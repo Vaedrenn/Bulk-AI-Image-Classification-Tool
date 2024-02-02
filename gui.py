@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QListWidgetItem
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
-CHARACTER_RESULTS = Qt.UserRole +2
+CHARACTER_RESULTS = Qt.UserRole + 2
 GENERAL_RESULTS = Qt.UserRole + 3
 TEXT = Qt.UserRole + 4
 
@@ -88,8 +88,8 @@ class MyGUI(QWidget):
         self.character_tags = CheckListWidget.CheckListWidget()
         self.general_tags = CheckListWidget.CheckListWidget()
 
-        self.rating_tags.setMaximumHeight(100)
-        self.character_tags.setMaximumHeight(100)
+        self.rating_tags.setMaximumHeight(70)
+        self.character_tags.setMaximumHeight(70)
 
         frame3.layout().addWidget(self.rating_tags)
         frame3.layout().addWidget(self.character_tags)
@@ -278,14 +278,35 @@ class MyGUI(QWidget):
         checklist.clear()
         if tags is None:
             return
-
         for tag_name, value in tags.items():
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
-            item = QListWidgetItem(f"{tag_name:<20}{percentage:>10}")  # Adjust the spacing as needed
-            checklist.addItem(item)
+            item = CustomListItem(tag_name, percentage)
+            list_item = QListWidgetItem(checklist)
+            list_item.setSizeHint(item.sizeHint())
+            checklist.addItem(list_item)
+            checklist.setItemWidget(list_item, item)
+
+
+class CustomListItem(QWidget):
+    def __init__(self, text1, text2, parent=None):
+        super().__init__(parent)
+
+        layout = QHBoxLayout(self)
+        layout.addWidget(QLabel(text1))
+        layout.addStretch(1)
+        layout.addWidget(QLabel(text2))
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
+    import actions
+
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    myGUI.model = actions.load_model(directory_path)
+    myGUI.labels = actions.load_labels(directory_path)
+    myGUI.submit(directory, 50)
+
+
     sys.exit(app.exec_())
