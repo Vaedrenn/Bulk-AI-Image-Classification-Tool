@@ -88,8 +88,8 @@ class MyGUI(QWidget):
         self.character_tags = CheckListWidget.CheckListWidget()
         self.general_tags = CheckListWidget.CheckListWidget()
 
-        self.rating_tags.setMaximumHeight(70)
-        self.character_tags.setMaximumHeight(70)
+        self.rating_tags.setMaximumHeight(100)
+        self.character_tags.setMaximumHeight(100)
 
         frame3.layout().addWidget(self.rating_tags)
         frame3.layout().addWidget(self.character_tags)
@@ -292,6 +292,7 @@ class CustomListItem(QWidget):
         super().__init__(parent)
 
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)  # Remove padding
         layout.addWidget(QLabel(text1))
         layout.addStretch(1)
         layout.addWidget(QLabel(text2))
@@ -307,6 +308,5 @@ if __name__ == '__main__':
     myGUI.model = actions.load_model(directory_path)
     myGUI.labels = actions.load_labels(directory_path)
     myGUI.submit(directory, 50)
-
 
     sys.exit(app.exec_())
