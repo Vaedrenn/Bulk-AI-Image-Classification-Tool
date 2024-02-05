@@ -10,6 +10,7 @@ class CustomListItem(QWidget):
         layout.setContentsMargins(5, 5, 5, 5)  # Remove padding
         self.checkbox = QCheckBox()
         self.checkbox.setCheckState(Qt.Checked)
+        self.data = text1
         layout.addWidget(self.checkbox)
         layout.addWidget(QLabel(text1))
         layout.addStretch(1)
@@ -18,13 +19,16 @@ class CustomListItem(QWidget):
     def get_checkbox(self):
         return self.checkbox
 
+    def get_data(self):
+        return self.data
+
 
 class TupleCheckListWidget(QListWidget):
     def __init__(self):
         super().__init__()
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
 
-    def addItem(self, item1, item2):
+    def addPair(self, item1, item2):
         item = CustomListItem(item1, item2)
         list_item = QListWidgetItem(self)
         list_item.setSizeHint(item.sizeHint())

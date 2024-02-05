@@ -6,8 +6,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 from PyQt5.QtCore import Qt, QEvent
-import CheckListWidget
-
+from CheckListWidget import CheckListWidget
+from TupleCheckListWidget import TupleCheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
 
 FILE_PATH = Qt.UserRole
@@ -51,7 +51,7 @@ class MyGUI(QWidget):
         frame3.setLayout(QVBoxLayout())
 
         # Frame 1
-        self.filelist = CheckListWidget.CheckListWidget()
+        self.filelist = CheckListWidget()
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
         self.filelist.itemClicked.connect(self.update_page)  # on click change image
@@ -84,9 +84,9 @@ class MyGUI(QWidget):
         frame2.layout().addWidget(text_output)
 
         # Frame 3
-        self.rating_tags = CheckListWidget.CheckListWidget()
-        self.character_tags = CheckListWidget.CheckListWidget()
-        self.general_tags = CheckListWidget.CheckListWidget()
+        self.rating_tags = TupleCheckListWidget()
+        self.character_tags = TupleCheckListWidget()
+        self.general_tags = TupleCheckListWidget()
 
         self.rating_tags.setMaximumHeight(100)
         self.character_tags.setMaximumHeight(100)
@@ -257,6 +257,7 @@ class MyGUI(QWidget):
             image_label = QLabel(self.image_label_widget)
             image_label.setAlignment(Qt.AlignCenter)
 
+            # padding fix should be 22
             width = 450
             height = 450
 
@@ -280,11 +281,7 @@ class MyGUI(QWidget):
             return
         for tag_name, value in tags.items():
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
-            item = CustomListItem(tag_name, percentage)
-            list_item = QListWidgetItem(checklist)
-            list_item.setSizeHint(item.sizeHint())
-            checklist.addItem(list_item)
-            checklist.setItemWidget(list_item, item)
+            checklist.addPair(tag_name, percentage)
 
 
 class CustomListItem(QWidget):
