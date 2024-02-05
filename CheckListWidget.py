@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QAbstractItemView, QWidget, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QAbstractItemView
 
 
 class CheckListWidget(QListWidget):
@@ -8,7 +8,8 @@ class CheckListWidget(QListWidget):
         super().__init__()
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
 
-    def addItem(self, item):
+    def addItem(self, item_text):
+        item = QListWidgetItem(item_text)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # Adds checkboxes
         item.setCheckState(Qt.Unchecked)
         QListWidget.addItem(self, item)  # use QListWidget's addItem
@@ -69,3 +70,16 @@ class CheckListWidget(QListWidget):
         # do default action
         else:
             super().keyPressEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        try:
+            item = self.itemAt(event.pos())
+            if item and item.flags() & Qt.ItemIsSelectable:
+                file_path = item.text()
+                if file_path:
+                    QDesktopServices.openUrl(QUrl.fromLocalFile(file_path))
+
+            # Call the base class implementation to allow for additional processing
+            super().mouseDoubleClickEvent(event)
+
+        except Exception as e: print(e)
