@@ -28,8 +28,10 @@ class TupleCheckListWidget(QListWidget):
         super().__init__()
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
 
-    def addPair(self, item1, item2):
+    def addPair(self, item1, item2, check_state):
         item = CustomListItem(item1, item2)
+        if not check_state:
+            item.checkbox.setCheckState(Qt.Unchecked)
         list_item = QListWidgetItem(self)
         list_item.setSizeHint(item.sizeHint())
         QListWidget.addItem(self, list_item)

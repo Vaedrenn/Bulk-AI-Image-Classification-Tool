@@ -15,7 +15,7 @@ RATING = Qt.UserRole + 1
 CHARACTER_RESULTS = Qt.UserRole + 2
 GENERAL_RESULTS = Qt.UserRole + 3
 TEXT = Qt.UserRole + 4
-
+TAG_STATE = Qt.UserRole + 5
 
 class MyGUI(QWidget):
     def __init__(self):
@@ -237,6 +237,21 @@ class MyGUI(QWidget):
             item.setData(RATING, rating_results)
             item.setData(TEXT, text)
 
+            # Build initial tag states
+            max_rating_key = max(rating_results, key=rating_results.get)
+            tag_state = {}
+
+            for key in rating_results.keys():
+                if key == max_rating_key:
+                    tag_state[key] = True
+                else:
+                    tag_state[key] = False
+
+            for key, value in threshold_results.items():
+                tag_state[key] = True
+
+            item.setData(TAG_STATE, tag_state)
+
             self.filelist.addItem(item)
 
     def update_page(self):
@@ -244,10 +259,11 @@ class MyGUI(QWidget):
         rating = current_item.data(RATING)
         character_tags = current_item.data(CHARACTER_RESULTS)
         general_tags = current_item.data(GENERAL_RESULTS)
+        tag_state = current_item.data(TAG_STATE)
         self.update_image()
-        self.update_tags(self.rating_tags, rating)
-        self.update_tags(self.character_tags, character_tags)
-        self.update_tags(self.general_tags, general_tags)
+        self.update_tags(self.rating_tags, rating, tag_state)
+        self.update_tags(self.character_tags, character_tags, tag_state)
+        self.update_tags(self.general_tags, general_tags, tag_state)
 
     def update_image(self):
         try:
@@ -275,13 +291,13 @@ class MyGUI(QWidget):
         except Exception as e:
             print(e)
 
-    def update_tags(self, checklist, tags):
+    def update_tags(self, checklist, tags, tag_state):
         checklist.clear()
         if tags is None:
             return
         for tag_name, value in tags.items():
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
-            checklist.addPair(tag_name, percentage)
+            checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
 
 class CustomListItem(QWidget):
