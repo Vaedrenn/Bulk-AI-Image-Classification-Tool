@@ -322,8 +322,13 @@ class MyGUI(QWidget):
         checked_ratings = self.rating_tags.get_check_states()
         checked_characters = self.character_tags.get_check_states()
         checked_general = self.general_tags.get_check_states()
+        data = self.filelist.currentItem().data(TAG_STATE)
+        data.update(checked_general)
+        data.update(checked_ratings)
+        data.update(checked_characters)
 
-        print(checked_ratings, checked_characters, checked_general)
+        current_item = self.filelist.currentItem()
+        current_item.setData(TAG_STATE, data)
 
     def select_all_tags(self):
         self.character_tags.check_all()
