@@ -57,6 +57,9 @@ class MyGUI(QWidget):
         deselect_all = QPushButton("Deselect All")
         self.filelist.itemClicked.connect(self.update_page)  # on click change image
 
+        select_all.clicked.connect(self.select_all_files)
+        deselect_all.clicked.connect(self.clear_all_files)
+
         frame1.layout().addWidget(self.filelist, 0, 0, 1, 2)
         frame1.layout().addWidget(select_all, 1, 0)
         frame1.layout().addWidget(deselect_all, 1, 1)
@@ -329,6 +332,12 @@ class MyGUI(QWidget):
 
         current_item = self.filelist.currentItem()
         current_item.setData(TAG_STATE, data)
+
+    def select_all_files(self):
+        self.filelist.check_all()
+
+    def clear_all_files(self):
+        self.filelist.uncheck_all()
 
     def select_all_tags(self):
         self.character_tags.check_all()
