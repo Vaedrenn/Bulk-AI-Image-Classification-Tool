@@ -79,6 +79,17 @@ class TupleCheckListWidget(QListWidget):
             item_checkbox = self.itemWidget(i).get_checkbox()
             item_checkbox.setCheckState(Qt.Unchecked)
 
+    # Returns a dictionary with all the check states {data: True|False}
+    def get_check_states(self):
+        check_states_dict = {}
+        for i in range(self.count()):
+            item_widget = self.itemWidget(self.item(i))
+            item_data = item_widget.get_data()
+            item_checkbox = item_widget.get_checkbox()
+            check_states_dict[item_data] = (item_checkbox.checkState() == Qt.Checked)
+
+        return check_states_dict
+
     def keyPressEvent(self, event):
         # on space key press swap states
         if event.key() == Qt.Key_Space:

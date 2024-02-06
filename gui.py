@@ -103,7 +103,7 @@ class MyGUI(QWidget):
 
         store_tags.setToolTip(
             "Changing images will save changes too, you don't have to press this button")
-        store_tags.clicked.connect(lambda value: self.update_tag_status)
+        store_tags.clicked.connect(lambda value: self.update_tag_status())
         b_select_all.clicked.connect(lambda value: self.select_all_tags())
         b_clear.clicked.connect(lambda value: self.clear_tags())
 
@@ -318,9 +318,12 @@ class MyGUI(QWidget):
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
             checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
-    def update_tag_status(self, tag_name):
-        # Update tag_status based on the tag_name
-        pass  # Placeholder for actual implementation
+    def update_tag_status(self):
+        checked_ratings = self.rating_tags.get_check_states()
+        checked_characters = self.character_tags.get_check_states()
+        checked_general = self.general_tags.get_check_states()
+
+        print(checked_ratings, checked_characters, checked_general)
 
     def select_all_tags(self):
         self.character_tags.check_all()
