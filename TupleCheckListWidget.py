@@ -9,6 +9,8 @@ class CustomListItem(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)  # Remove padding
         self.checkbox = QCheckBox()
+        self.checkbox.setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px;}")
+
         self.checkbox.setCheckState(Qt.Checked)
         self.data = text1
         layout.addWidget(self.checkbox)
@@ -37,7 +39,6 @@ class TupleCheckListWidget(QListWidget):
         QListWidget.addItem(self, list_item)
         self.setItemWidget(list_item, item)
 
-
     def getCheckedRows(self):
         return self.__getRows(Qt.Checked)
 
@@ -61,6 +62,16 @@ class TupleCheckListWidget(QListWidget):
         for i in checked_rows:
             self.takeItem(i - offset)
             offset += 1
+
+    def check_all(self):
+        for i in range(self.count()):
+            item_checkbox = self.itemWidget(self.item(i)).get_checkbox()
+            item_checkbox.setCheckState(Qt.Checked)
+
+    def uncheck_all(self):
+        for i in range(self.count()):
+            item_checkbox = self.itemWidget(self.item(i)).get_checkbox()
+            item_checkbox.setCheckState(Qt.Unchecked)
 
     def clear_selection(self):
         selected_items = self.selectedItems()

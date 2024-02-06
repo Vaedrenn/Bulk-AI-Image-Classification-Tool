@@ -17,6 +17,7 @@ GENERAL_RESULTS = Qt.UserRole + 3
 TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
 
+
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
@@ -63,6 +64,7 @@ class MyGUI(QWidget):
         # Frame 2
         self.image_label_widget = QWidget()
         self.image_label_layout = QVBoxLayout(self.image_label_widget)
+
         image_label = QLabel(self.image_label_widget)
 
         pixmap = QPixmap(450, 450)
@@ -91,10 +93,28 @@ class MyGUI(QWidget):
         self.rating_tags.setMaximumHeight(100)
         self.character_tags.setMaximumHeight(100)
 
+        button_box = QWidget()
+        button_box.setLayout(QHBoxLayout())
+        button_box.layout().setContentsMargins(0, 0, 0, 0)
+
+        store_tags = QPushButton("Save Changes")
+        b_select_all = QPushButton("Select All")
+        b_clear = QPushButton("Clear")
+
+        store_tags.setToolTip(
+            "Changing images will save changes too, you don't have to press this button")
+        store_tags.clicked.connect(lambda value: self.update_tag_status)
+        b_select_all.clicked.connect(lambda value: self.select_all_tags())
+        b_clear.clicked.connect(lambda value: self.clear_tags())
+
+        button_box.layout().addWidget(store_tags)
+        button_box.layout().addWidget(b_select_all)
+        button_box.layout().addWidget(b_clear)
+
         frame3.layout().addWidget(self.rating_tags)
         frame3.layout().addWidget(self.character_tags)
         frame3.layout().addWidget(self.general_tags)
-
+        frame3.layout().addWidget(button_box)
         # self.setStyleSheet("border: 1px solid black;")
 
         # Set window properties
@@ -273,7 +293,6 @@ class MyGUI(QWidget):
             image_label = QLabel(self.image_label_widget)
             image_label.setAlignment(Qt.AlignCenter)
 
-            # padding fix should be 22
             width = 450
             height = 450
 
@@ -299,16 +318,17 @@ class MyGUI(QWidget):
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
             checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
+    def update_tag_status(self, tag_name):
+        # Update tag_status based on the tag_name
+        pass  # Placeholder for actual implementation
 
-class CustomListItem(QWidget):
-    def __init__(self, text1, text2, parent=None):
-        super().__init__(parent)
+    def select_all_tags(self):
+        self.character_tags.check_all()
+        self.general_tags.check_all()
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)  # Remove padding
-        layout.addWidget(QLabel(text1))
-        layout.addStretch(1)
-        layout.addWidget(QLabel(text2))
+    def clear_tags(self):
+        self.character_tags.uncheck_all()
+        self.general_tags.uncheck_all()
 
 
 if __name__ == '__main__':
