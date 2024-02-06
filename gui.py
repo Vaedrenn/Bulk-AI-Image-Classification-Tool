@@ -235,7 +235,7 @@ class MyGUI(QWidget):
         if self.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
             return
-        if directory is None:
+        if directory is None or directory is '':
             return
         from actions import predict_all
         score_threshold = general_threshold / 100
