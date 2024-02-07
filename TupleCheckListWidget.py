@@ -9,7 +9,7 @@ class CustomListItem(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)  # Remove padding
         self.checkbox = QCheckBox()
-        self.checkbox.setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px;}")
+        # self.checkbox.setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px;}")
 
         self.checkbox.setCheckState(Qt.Checked)
         self.data = text1

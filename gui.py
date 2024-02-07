@@ -347,6 +347,32 @@ class MyGUI(QWidget):
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
 
+    def eventFilter(self, obj, event):
+        # arrow key navigation
+        if obj == self.filelist and event.type() == QEvent.KeyPress:
+            key = event.key()
+
+            if key == Qt.Key_Up:
+                current_row = self.filelist.currentRow()
+                if current_row > 0:
+                    self.filelist.setCurrentRow(current_row - 1)
+                    self.update_page()
+                return True
+            elif key == Qt.Key_Down:
+                current_row = self.filelist.currentRow()
+                if current_row < self.filelist.count() - 1:
+                    self.filelist.setCurrentRow(current_row + 1)
+                    self.update_page()
+                return True
+
+        return super().eventFilter(obj, event)
+
+    def showEvent(self, event):
+        self.filelist.installEventFilter(self)
+
+    def hideEvent(self, event):
+        self.filelist.removeEventFilter(self)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
