@@ -21,6 +21,7 @@ TAG_STATE = Qt.UserRole + 5
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.text_output = None
         self.general_tags = None
         self.character_tags = None
         self.rating_tags = None
@@ -80,13 +81,13 @@ class MyGUI(QWidget):
 
         self.action_box = self.action_box_widget()
 
-        text_output = QTextEdit()
-        text_output.setPlaceholderText("Text Output")
-        text_output.setReadOnly(True)
+        self.text_output = QTextEdit()
+        self.text_output.setPlaceholderText("Text Output")
+        self.text_output.setReadOnly(True)
 
         frame2.layout().addWidget(self.image_label_widget)
         frame2.layout().addWidget(self.action_box)
-        frame2.layout().addWidget(text_output)
+        frame2.layout().addWidget(self.text_output)
 
         # Frame 3
         self.rating_tags = TupleCheckListWidget()
@@ -283,10 +284,13 @@ class MyGUI(QWidget):
         character_tags = current_item.data(CHARACTER_RESULTS)
         general_tags = current_item.data(GENERAL_RESULTS)
         tag_state = current_item.data(TAG_STATE)
+        text = current_item.data(TEXT)
+
         self.update_image()
         self.update_tags(self.rating_tags, rating, tag_state)
         self.update_tags(self.character_tags, character_tags, tag_state)
         self.update_tags(self.general_tags, general_tags, tag_state)
+        self.text_output.setText(text)
 
     def update_image(self):
         try:
