@@ -333,9 +333,11 @@ class MyGUI(QWidget):
         data.update(checked_general)
         data.update(checked_ratings)
         data.update(checked_characters)
+        text = ', '.join(tag_name for tag_name, value in data.items() if value)
 
         current_item = self.filelist.currentItem()
         current_item.setData(TAG_STATE, data)
+        current_item.setData(TEXT, text)
 
     def select_all_files(self):
         self.filelist.check_all()
