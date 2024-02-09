@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import io
 import os
 from collections import OrderedDict
-from typing import Tuple, Dict, Any, List
+from typing import Any
 
 import deepdanbooru as dd
 import numpy as np
-from PIL import Image, ExifTags
 import tensorflow as tf
+from PIL import Image
+from PIL.ExifTags import TAGS
+from PIL.TiffImagePlugin import ImageFileDirectory_v2
 
 
 # loads the model from /models/
@@ -146,24 +149,38 @@ def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.pa
 def write_tags(image_path: str, info: str):
     # Open the image using PIL
     with Image.open(image_path) as img:
-        # Get the existing Exif data (if any)
-        exif_data = img.info.get("exif", b"")
+        ifd = ImageFileDirectory_v2()
+        exif_stream = io.BytesIO()
+        _TAGS = dict(((v, k) for k, v in TAGS.items()))  # enumerate possible exif tags
+        ifd[_TAGS["ImageDescription"]] = info
+        ifd.save(exif_stream)
+        hex = b"Exif\x00\x00" + exif_stream.getvalue()
 
-        # Convert the Exif data to an ExifTags dictionary
-        exif_dict = {ExifTags.TAGS[key]: exif_data[key] for key in ExifTags.TAGS.keys() if key in exif_data}
+        img.save(image_path, exif=hex)
 
-        # Set or update the "ImageDescription" tag in the Exif data
-        exif_dict[ExifTags.TAGS["ImageDescription"]] = info
 
-        # Convert the ExifTags dictionary back to Exif data
-        new_exif_data = b"".join(
-            ExifTags.MARKER + bytes([key, 0]) + bytes(value)
-            for key, value in exif_dict.items()
-        )
+def read_exif(image_path):
+    # Open the image file
+    image = Image.open(image_path)
 
-        # Save the modified Exif data back to the image
-        img.save(image_path, exif=new_exif_data)
+    # Get Exif data
+    exif_data = image.getexif()
+
+    # Check if Exif data exists
+    if exif_data:
+        # Iterate over Exif tags
+        for tag, value in exif_data.items():
+            # Look for the tag corresponding to "ImageDescription"
+            if TAGS.get(tag) == "ImageDescription":
+                # Print out value for "ImageDescription"
+                print(f"ImageDescription: {value}")
+                break  # Stop iteration once ImageDescription tag is found
 
 
 if __name__ == "__main__":
-    pass
+    # Example usage:
+    image_path = r"tests/images/1670120513144187.png"
+    new_description = "This is a new description for the image."
+    write_tags(image_path, new_description)
+
+    read_exif(image_path)

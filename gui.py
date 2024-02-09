@@ -236,7 +236,7 @@ class MyGUI(QWidget):
         if self.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
             return
-        if directory is None or directory is '':
+        if directory is None or directory == '':
             return
         from actions import predict_all
         score_threshold = general_threshold / 100
@@ -383,12 +383,12 @@ class MyGUI(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
-    import actions
-
-    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    directory = r"tests/images"
-    myGUI.model = actions.load_model(directory_path)
-    myGUI.labels = actions.load_labels(directory_path)
-    myGUI.submit(directory, 50)
+    # import actions
+    #
+    # directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    # directory = r"tests/images"
+    # myGUI.model = actions.load_model(directory_path)
+    # myGUI.labels = actions.load_labels(directory_path)
+    # myGUI.submit(directory, 50)
 
     sys.exit(app.exec_())

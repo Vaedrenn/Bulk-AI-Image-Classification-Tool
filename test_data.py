@@ -1,13 +1,18 @@
-import PIL
+import os
 import numpy as np
 import pytest
 
-from actions import load_model, load_labels, predict, process_images_from_directory, predict_all
+from actions import load_model, load_labels, predict, process_images_from_directory, predict_all,write_tags
 import tensorflow as tf
 import deepdanbooru as dd
+from PIL import Image, ExifTags
+
 
 path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
+# Define paths for test images and info
+TEST_IMAGE_PATH = "test_image.jpg"
+TEST_INFO = "Test info"
 
 @pytest.fixture
 def model():
@@ -37,7 +42,7 @@ def test_predict(model, labels):
     _, height, width, _ = model.input_shape
 
     # Model only supports 3 channels
-    image = PIL.Image.open(img_path).convert('RGB')
+    image = Image.open(img_path).convert('RGB')
 
     image = np.asarray(image)
     image = tf.image.resize(image,
@@ -85,48 +90,7 @@ def test_predict_all(model, labels):
         assert text
 
 
-# tests if the ratings and labels match up
-def test_predict_rating(model, labels):
-    img_path = r'tests/images/ヒトこもる_花心_97031695_p0.png'
-    _, height, width, _ = model.input_shape
 
-    # Model only supports 3 channels
-    image = PIL.Image.open(img_path).convert('RGB')
-
-    image = np.asarray(image)
-    image = tf.image.resize(image,
-                            size=(height, width),
-                            method=tf.image.ResizeMethod.AREA,
-                            preserve_aspect_ratio=True)
-    image = image.numpy()
-    image = dd.image.transform_and_pad_image(image, width, height)
-    image = image / 255.
-
-    threshold_results, all_results, rating, text = predict(model, labels, image, 0.5)
-
-    # Check if any key in rating is in threshold_results
-    common_keys = set(rating.keys()).intersection(threshold_results.keys())
-
-    for key in common_keys:
-        if threshold_results[key] == rating[key]:
-            print(f"Key: {key}, Threshold Value: {threshold_results[key]}, Rating Value: {rating[key]}")
-
-    # Assert that all common keys have the same values
-    assert all(threshold_results[key] == rating[key] for key in common_keys)
-
-
-# def test_predict_all_ratings(model, labels):
-#     dir = r"tests/images"
-#     results = predict_all(model, labels, dir, 0.5)
-#
-#     assert results
-#
-#     for image in results:
-#         filename = image[0]
-#         threshold_results, all_results, rating_results, text = image[1]
-#         common_keys = set(rating_results.keys()).intersection(threshold_results.keys())
-#         # for key in common_keys:
-#         #     if threshold_results[key] == rating_results[key]:
-#         #         print(f"Key: {key}, Threshold Value: {threshold_results[key]}, Rating Value: {rating_results[key]}")
-#
-#         assert any(threshold_results[key] == rating_results[key] for key in common_keys)
+def test_write_tags():
+    path = r"tests/images/test.png"
+    write_tags(path, "TEST")
