@@ -10,6 +10,8 @@ from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
 
+from actions import write_tags
+
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
 CHARACTER_RESULTS = Qt.UserRole + 2
@@ -352,6 +354,12 @@ class MyGUI(QWidget):
     def clear_tags(self):
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
+
+    def tag_image(self):
+        current_image = self.filelist.currentItem()
+        info = current_image.data(TEXT)
+        image_path = current_image.data(FILE_PATH)
+        write_tags(image_path, info)
 
     def eventFilter(self, obj, event):
         # arrow key navigation

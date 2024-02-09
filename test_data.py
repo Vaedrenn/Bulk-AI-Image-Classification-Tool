@@ -2,17 +2,17 @@ import os
 import numpy as np
 import pytest
 
-from actions import load_model, load_labels, predict, process_images_from_directory, predict_all,write_tags
+from actions import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
 import tensorflow as tf
 import deepdanbooru as dd
 from PIL import Image, ExifTags
-
 
 path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
 # Define paths for test images and info
 TEST_IMAGE_PATH = "test_image.jpg"
 TEST_INFO = "Test info"
+
 
 @pytest.fixture
 def model():
@@ -88,7 +88,6 @@ def test_predict_all(model, labels):
         assert all_results
         assert rating_results
         assert text
-
 
 
 def test_write_tags():
