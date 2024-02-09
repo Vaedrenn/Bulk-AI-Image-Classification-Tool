@@ -157,6 +157,7 @@ def write_tags(image_path: str, info: str):
         hex = b"Exif\x00\x00" + exif_stream.getvalue()
 
         img.save(image_path, exif=hex)
+        read_exif(image_path)
 
 
 def read_exif(image_path):

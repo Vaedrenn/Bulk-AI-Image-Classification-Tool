@@ -205,12 +205,14 @@ class MyGUI(QWidget):
         submit_button.clicked.connect(lambda value: self.submit(dir_input.text(), general_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
-        all_images_button = QPushButton("Tag Selected images")
+        selected_images_button = QPushButton("Tag Selected images")
+        one_image_button.clicked.connect(lambda value: self.tag_image())
+        selected_images_button.clicked.connect(lambda value: self.tag_selected_images())
 
         button_grid.addWidget(submit_button, 0, 0)
         button_grid.addWidget(reset_button, 0, 1)
         button_grid.addWidget(one_image_button, 3, 0)
-        button_grid.addWidget(all_images_button, 3, 1)
+        button_grid.addWidget(selected_images_button, 3, 1)
         return action_box
 
     def browse_directory(self, line_edit):
@@ -361,6 +363,14 @@ class MyGUI(QWidget):
         image_path = current_image.data(FILE_PATH)
         write_tags(image_path, info)
 
+    def tag_selected_images(self):
+        selected_rows = self.filelist.getCheckedRows()
+        for row in selected_rows:
+            item = self.filelist.item(row)
+            info = item.data(TEXT)
+            image_path = item.data(FILE_PATH)
+            write_tags(image_path, info)
+
     def eventFilter(self, obj, event):
         # arrow key navigation
         if obj == self.filelist and event.type() == QEvent.KeyPress:
@@ -391,12 +401,12 @@ class MyGUI(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
-    # import actions
-    #
-    # directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    # directory = r"tests/images"
-    # myGUI.model = actions.load_model(directory_path)
-    # myGUI.labels = actions.load_labels(directory_path)
-    # myGUI.submit(directory, 50)
+    import actions
+
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    myGUI.model = actions.load_model(directory_path)
+    myGUI.labels = actions.load_labels(directory_path)
+    myGUI.submit(directory, 50)
 
     sys.exit(app.exec_())
