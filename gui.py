@@ -10,8 +10,6 @@ from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
 
-from actions import write_tags
-
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
 CHARACTER_RESULTS = Qt.UserRole + 2
@@ -330,6 +328,10 @@ class MyGUI(QWidget):
             checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
     def update_tag_status(self):
+        if self.filelist.currentItem() is None:
+            return
+
+        # get the current checks states of the tags
         checked_ratings = self.rating_tags.get_check_states()
         checked_characters = self.character_tags.get_check_states()
         checked_general = self.general_tags.get_check_states()
@@ -358,12 +360,22 @@ class MyGUI(QWidget):
         self.general_tags.uncheck_all()
 
     def tag_image(self):
+        if not self.model:
+            return False
+        if not self.labels:
+            return False
+        from actions import write_tags
         current_image = self.filelist.currentItem()
         info = current_image.data(TEXT)
         image_path = current_image.data(FILE_PATH)
         write_tags(image_path, info)
 
     def tag_selected_images(self):
+        if not self.model:
+            return False
+        if not self.labels:
+            return False
+        from actions import write_tags
         selected_rows = self.filelist.getCheckedRows()
         for row in selected_rows:
             item = self.filelist.item(row)
@@ -401,12 +413,12 @@ class MyGUI(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
-    import actions
+    # import actions
 
-    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    directory = r"tests/images"
-    myGUI.model = actions.load_model(directory_path)
-    myGUI.labels = actions.load_labels(directory_path)
-    myGUI.submit(directory, 50)
+    # directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    # directory = r"tests/images"
+    # myGUI.model = actions.load_model(directory_path)
+    # myGUI.labels = actions.load_labels(directory_path)
+    # myGUI.submit(directory, 50)
 
     sys.exit(app.exec_())
