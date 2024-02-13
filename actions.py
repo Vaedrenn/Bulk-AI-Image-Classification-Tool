@@ -146,6 +146,7 @@ def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.pa
         return None
 
 
+# Writes tags to exif, modified from Vladmanic's https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6087
 def write_tags(image_path: str, info: str):
     # Open the image using PIL
     with Image.open(image_path) as img:

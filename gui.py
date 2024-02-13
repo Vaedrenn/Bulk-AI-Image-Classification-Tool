@@ -232,15 +232,17 @@ class MyGUI(QWidget):
             self.labels = load_labels(directory_path)
             return directory_path
 
+    # Tags all images in the directory
     def submit(self, directory, general_threshold):
-        if self.model is None:
+        if self.model is None or directory is None or directory == '':
             return
         if self.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
+            QMessageBox.warning(self, "Warning", "Model loaded successfully but no labels are found.")
             return
-        if directory is None or directory == '':
-            return
+
         from actions import predict_all
+
         score_threshold = general_threshold / 100
 
         # filename, [threshold_results, all_results, rating_results, text]
@@ -255,7 +257,6 @@ class MyGUI(QWidget):
         for image in results:
             file_path = image[0]
             threshold_results, _, rating_results, text = image[1]
-            threshold_results = threshold_results
             filename = os.path.basename(file_path)
             item = QListWidgetItem(filename)
             item.setData(FILE_PATH, file_path)
@@ -267,6 +268,7 @@ class MyGUI(QWidget):
             max_rating_key = max(rating_results, key=rating_results.get)
             tag_state = {}
 
+            # Only check the content rating for threshold, check everything else
             for key in rating_results.keys():
                 if key == max_rating_key:
                     tag_state[key] = True
@@ -280,6 +282,7 @@ class MyGUI(QWidget):
 
             self.filelist.addItem(item)
 
+    # Refreshes the contents of the page when a new image is selected
     def update_page(self):
         current_item = self.filelist.currentItem()
         rating = current_item.data(RATING)
@@ -294,6 +297,7 @@ class MyGUI(QWidget):
         self.update_tags(self.general_tags, general_tags, tag_state)
         self.text_output.setText(text)
 
+    # Display image
     def update_image(self):
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
@@ -319,6 +323,7 @@ class MyGUI(QWidget):
         except Exception as e:
             print(e)
 
+    # Refreshes the tags in the given checklist
     def update_tags(self, checklist, tags, tag_state):
         checklist.clear()
         if tags is None:
@@ -327,6 +332,7 @@ class MyGUI(QWidget):
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
             checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
+    # Saves the tags of the current image
     def update_tag_status(self):
         if self.filelist.currentItem() is None:
             return
@@ -359,6 +365,7 @@ class MyGUI(QWidget):
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
 
+    # Writes the tags to exif
     def tag_image(self):
         if not self.model:
             return False
@@ -370,6 +377,7 @@ class MyGUI(QWidget):
         image_path = current_image.data(FILE_PATH)
         write_tags(image_path, info)
 
+    # Writes tags to exif for all selected images
     def tag_selected_images(self):
         if not self.model:
             return False
@@ -413,12 +421,12 @@ class MyGUI(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
-    # import actions
+    import actions
 
-    # directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    # directory = r"tests/images"
-    # myGUI.model = actions.load_model(directory_path)
-    # myGUI.labels = actions.load_labels(directory_path)
-    # myGUI.submit(directory, 50)
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    myGUI.model = actions.load_model(directory_path)
+    myGUI.labels = actions.load_labels(directory_path)
+    myGUI.submit(directory, 50)
 
     sys.exit(app.exec_())
