@@ -68,6 +68,7 @@ class MyGUI(QWidget):
         # Frame 2
         self.image_label_widget = QWidget()
         self.image_label_layout = QVBoxLayout(self.image_label_widget)
+        self.image_label_layout.setContentsMargins(0, 0, 0, 0)
 
         image_label = QLabel(self.image_label_widget)
 
@@ -306,8 +307,8 @@ class MyGUI(QWidget):
             image_label = QLabel(self.image_label_widget)
             image_label.setAlignment(Qt.AlignCenter)
 
-            width = 450
-            height = 450
+            width = self.image_label_widget.width()
+            height = self.image_label_widget.height()
 
             # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
             while self.image_label_layout.count() > 0:
@@ -347,6 +348,7 @@ class MyGUI(QWidget):
         data.update(checked_characters)
         text = ', '.join(tag_name for tag_name, value in data.items() if value)
 
+        # update associated tags
         current_item = self.filelist.currentItem()
         current_item.setData(TAG_STATE, data)
         current_item.setData(TEXT, text)
