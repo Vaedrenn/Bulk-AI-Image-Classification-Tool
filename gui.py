@@ -21,6 +21,7 @@ TAG_STATE = Qt.UserRole + 5
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.image_label = None
         self.text_output = None
         self.general_tags = None
         self.character_tags = None
@@ -70,15 +71,16 @@ class MyGUI(QWidget):
         self.image_label_layout = QVBoxLayout(self.image_label_widget)
         self.image_label_layout.setContentsMargins(0, 0, 0, 0)
 
-        image_label = QLabel(self.image_label_widget)
+        self.image_label = QLabel(self.image_label_widget)
+        # self.image_label.setScaledContents(True)
 
         pixmap = QPixmap(450, 450)
         pixmap.fill(Qt.white)  # Fill the pixmap with a white color
-        image_label.setPixmap(pixmap)
+        self.image_label.setPixmap(pixmap)
 
-        image_label.setPixmap(pixmap)
-        self.image_label_layout.addWidget(image_label)
-        image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.setPixmap(pixmap)
+        self.image_label_layout.addWidget(self.image_label)
+        self.image_label.setAlignment(Qt.AlignCenter)
 
         self.action_box = self.action_box_widget()
 
@@ -106,8 +108,6 @@ class MyGUI(QWidget):
         b_select_all = QPushButton("Select All")
         b_clear = QPushButton("Clear")
 
-        store_tags.setToolTip(
-            "Changing images will save changes too, you don't have to press this button")
         store_tags.clicked.connect(lambda value: self.update_tag_status())
         b_select_all.clicked.connect(lambda value: self.select_all_tags())
         b_clear.clicked.connect(lambda value: self.clear_tags())
@@ -302,24 +302,9 @@ class MyGUI(QWidget):
     def update_image(self):
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
-            pixmap = QPixmap(image_path)  # open image as pixmap
-
-            image_label = QLabel(self.image_label_widget)
-            image_label.setAlignment(Qt.AlignCenter)
-
-            width = self.image_label_widget.width()
-            height = self.image_label_widget.height()
-
-            # remove any previous image labels and add new QLabel current image, This prevents stacking of image labels
-            while self.image_label_layout.count() > 0:
-                self.image_label_layout.takeAt(0).widget().deleteLater()
-
-            # scale down image if it's bigger than the container
-            if pixmap.width() > width or pixmap.height() > height:
-                image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio))
-            else:
-                image_label.setPixmap(pixmap)
-            self.image_label_layout.addWidget(image_label)
+            pixmap2 = QPixmap(image_path)  # open image as pixmap
+            self.image_label.setPixmap(pixmap2.scaled(
+                self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
         except Exception as e:
             print(e)
