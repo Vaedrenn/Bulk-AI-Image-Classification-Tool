@@ -4,11 +4,13 @@ from collections import OrderedDict
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory
 from PyQt5.QtCore import Qt, QEvent
 from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
+
+from dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -35,6 +37,10 @@ class MyGUI(QWidget):
         self.initUI()
 
     def initUI(self):
+        QApplication.setStyle(QStyleFactory.create('Fusion'))
+        dark_palette = create_dark_palette()
+        self.setPalette(dark_palette)
+
         # Create labels
         frame1 = QWidget()
         frame2 = QWidget()
@@ -117,7 +123,7 @@ class MyGUI(QWidget):
         button_box.layout().addWidget(b_clear)
 
         frame3.layout().addWidget(self.rating_tags)
-        frame3.layout().addWidget(self.character_tags)
+        # frame3.layout().addWidget(self.character_tags)
         frame3.layout().addWidget(self.general_tags)
         frame3.layout().addWidget(button_box)
         # self.setStyleSheet("border: 1px solid black;")
@@ -309,7 +315,6 @@ class MyGUI(QWidget):
             else:
                 pixmap2 = pixmap2.scaledToHeight(450, Qt.FastTransformation)
             self.image_label.setPixmap(pixmap2)
-            print(self.image_label.size())
 
         except Exception as e:
             print(e)

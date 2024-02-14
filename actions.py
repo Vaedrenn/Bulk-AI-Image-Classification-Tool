@@ -57,6 +57,16 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
     for filename in image_filenames:
         image_path = os.path.join(directory, filename)
         try:
+            # image = tf.keras.utils.load_img(
+            #                                 image_path,
+            #                                 grayscale=False,
+            #                                 color_mode='rgb',
+            #                                 target_size=(height, width),
+            #                                 interpolation='nearest',
+            #                                 keep_aspect_ratio=True
+            # )
+            # image = tf.keras.utils.img_to_array(image)
+
             # Model only supports 3 channels
             image = Image.open(image_path).convert('RGB')
 
@@ -158,7 +168,7 @@ def write_tags(image_path: str, info: str):
         hex = b"Exif\x00\x00" + exif_stream.getvalue()
 
         img.save(image_path, exif=hex)
-        read_exif(image_path)
+        # read_exif(image_path)
 
 
 def read_exif(image_path):
