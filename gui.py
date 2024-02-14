@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy
 from PyQt5.QtCore import Qt, QEvent
 from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
@@ -72,7 +72,6 @@ class MyGUI(QWidget):
         self.image_label_layout.setContentsMargins(0, 0, 0, 0)
 
         self.image_label = QLabel(self.image_label_widget)
-        # self.image_label.setScaledContents(True)
 
         pixmap = QPixmap(450, 450)
         pixmap.fill(Qt.white)  # Fill the pixmap with a white color
@@ -139,7 +138,7 @@ class MyGUI(QWidget):
 
         selection_grid = QGridLayout()
         slider_grid = QGridLayout()
-        button_grid = QGridLayout()
+        button_grid = QHBoxLayout()
         output_grid = QGridLayout()
 
         selection_frame.setLayout(selection_grid)
@@ -200,7 +199,6 @@ class MyGUI(QWidget):
         slider_grid.addWidget(character_slider, 3, 0, 1, 3)
 
         submit_button = QPushButton("Submit")
-        reset_button = QPushButton("Reset")
         submit_button.clicked.connect(lambda value: self.submit(dir_input.text(), general_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
@@ -208,10 +206,9 @@ class MyGUI(QWidget):
         one_image_button.clicked.connect(lambda value: self.tag_image())
         selected_images_button.clicked.connect(lambda value: self.tag_selected_images())
 
-        button_grid.addWidget(submit_button, 0, 0)
-        button_grid.addWidget(reset_button, 0, 1)
-        button_grid.addWidget(one_image_button, 3, 0)
-        button_grid.addWidget(selected_images_button, 3, 1)
+        button_grid.addWidget(submit_button)
+        button_grid.addWidget(one_image_button)
+        button_grid.addWidget(selected_images_button)
         return action_box
 
     def browse_directory(self, line_edit):
@@ -302,7 +299,8 @@ class MyGUI(QWidget):
     def update_image(self):
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
-            pixmap2 = QPixmap(image_path)  # open image as pixmap
+            pixmap2 = QPixmap(image_path)
+            # scale down image if larger than container
             self.image_label.setPixmap(pixmap2.scaled(
                 self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
