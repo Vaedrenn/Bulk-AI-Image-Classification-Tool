@@ -70,6 +70,7 @@ class MyGUI(QWidget):
         self.image_label_widget = QWidget()
         self.image_label_layout = QVBoxLayout(self.image_label_widget)
         self.image_label_layout.setContentsMargins(0, 0, 0, 0)
+        self.image_label_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.image_label = QLabel(self.image_label_widget)
 
@@ -301,8 +302,14 @@ class MyGUI(QWidget):
             image_path = self.filelist.currentItem().data(FILE_PATH)
             pixmap2 = QPixmap(image_path)
             # scale down image if larger than container
-            self.image_label.setPixmap(pixmap2.scaled(
-                self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            # landscape image
+            if pixmap2.width() > pixmap2.height():
+                pixmap2 = pixmap2.scaledToWidth(450, Qt.FastTransformation)
+            # portrait image
+            else:
+                pixmap2 = pixmap2.scaledToHeight(450, Qt.FastTransformation)
+            self.image_label.setPixmap(pixmap2)
+            print(self.image_label.size())
 
         except Exception as e:
             print(e)
