@@ -46,6 +46,19 @@ def load_labels(model_path: str | os.path) -> list[str]:
     return labels
 
 
+def load_character_labels(model_path: str | os.path) -> list[str]:
+    print("Loading tags")
+    path = os.path.join(model_path, "tags-character.txt")
+    try:
+        with open(path) as f:
+            labels = [line.strip() for line in f.readlines()]
+    except (FileNotFoundError, IOError, OSError) as file_error:
+        print(f"Error reading labels file: {file_error}")
+        return []
+    print("Finished Loading tags")
+    return labels
+
+
 # Preprocesses images from directory
 def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
     preprocessed_images = []
