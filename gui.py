@@ -31,6 +31,7 @@ class MyGUI(QWidget):
         self.image_label_layout = None
         self.image_label_widget = None
         self.labels = []
+        self.char_labels = []
         self.model = None
         self.action_box = None
         self.filelist = None
@@ -252,11 +253,12 @@ class MyGUI(QWidget):
             return
         else:
             print("importing actions")
-            from actions import load_model, load_labels
+            from actions import load_model, load_labels, load_character_labels
             print("Finished importing actions")
             line_edit.setText(directory_path)
             self.model = load_model(directory_path)
             self.labels = load_labels(directory_path)
+            self.char_labels = load_character_labels(directory_path)
             return directory_path
 
     # Tags all images in the directory
