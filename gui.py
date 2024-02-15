@@ -2,7 +2,7 @@ import os
 import sys
 from collections import OrderedDict
 
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory
 from PyQt5.QtCore import Qt, QEvent
@@ -81,7 +81,7 @@ class MyGUI(QWidget):
         self.image_label = QLabel(self.image_label_widget)
 
         pixmap = QPixmap(450, 450)
-        pixmap.fill(Qt.white)  # Fill the pixmap with a white color
+        pixmap.fill(Qt.lightGray)  # Fill the pixmap with a white color
         self.image_label.setPixmap(pixmap)
 
         self.image_label.setPixmap(pixmap)
@@ -122,9 +122,30 @@ class MyGUI(QWidget):
         button_box.layout().addWidget(store_tags)
         button_box.layout().addWidget(b_select_all)
         button_box.layout().addWidget(b_clear)
+        #
+        rating_label = QLabel("Content Rating")
+        font = QFont()
+        font.setPointSize(10)
+        rating_label.setFont(font)
+        rating_label.setContentsMargins(5, 5, 5, 5)
 
+        character_label = QLabel("Character Tags")
+        font = QFont()
+        font.setPointSize(10)
+        character_label.setFont(font)
+        character_label.setContentsMargins(5, 5, 5, 5)
+
+        general_label = QLabel("General Tags")
+        font = QFont()
+        font.setPointSize(10)
+        general_label.setFont(font)
+        general_label.setContentsMargins(5, 5, 5, 5)
+
+        frame3.layout().addWidget(rating_label)
         frame3.layout().addWidget(self.rating_tags)
-        # frame3.layout().addWidget(self.character_tags)
+        frame3.layout().addWidget(character_label)
+        frame3.layout().addWidget(self.character_tags)
+        frame3.layout().addWidget(general_label)
         frame3.layout().addWidget(self.general_tags)
         frame3.layout().addWidget(button_box)
         # self.setStyleSheet("border: 1px solid black;")
@@ -313,7 +334,7 @@ class MyGUI(QWidget):
 
             # scale down image if it's bigger than the container
             if pixmap.width() > width or pixmap.height() > height:
-                self.image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio), Qt.FastTransformation)
+                self.image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio, Qt.FastTransformation))
             else:
                 self.image_label.setPixmap(pixmap)
             self.image_label_layout.addWidget(self.image_label)

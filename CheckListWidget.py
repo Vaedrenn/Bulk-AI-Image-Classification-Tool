@@ -83,7 +83,7 @@ class CheckListWidget(QListWidget):
 
     def mouseDoubleClickEvent(self, event):
         try:
-            print("MouseDoubleClick")
+            # print("MouseDoubleClick")
             item = self.itemAt(event.pos())
             if item and item.flags() & Qt.ItemIsSelectable:
                 file_path = item.data(Qt.UserRole)
