@@ -93,6 +93,7 @@ class MyGUI(QWidget):
         self.text_output = QTextEdit()
         self.text_output.setPlaceholderText("Text Output")
         self.text_output.setReadOnly(True)
+        self.text_output.setMaximumHeight(200)
 
         frame2.layout().addWidget(self.image_label_widget)
         frame2.layout().addWidget(self.action_box)
@@ -306,16 +307,16 @@ class MyGUI(QWidget):
     def update_image(self):
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
-            pixmap2 = QPixmap(image_path)
-            # scale down image if larger than container
-            # landscape image
-            if pixmap2.width() > pixmap2.height():
-                pixmap2 = pixmap2.scaledToWidth(450, Qt.FastTransformation)
-            # portrait image
-            else:
-                pixmap2 = pixmap2.scaledToHeight(450, Qt.FastTransformation)
-            self.image_label.setPixmap(pixmap2)
+            pixmap = QPixmap(image_path)
+            width = self.image_label_widget.width()
+            height = self.image_label_widget.height()
 
+            # scale down image if it's bigger than the container
+            if pixmap.width() > width or pixmap.height() > height:
+                self.image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio), Qt.FastTransformation)
+            else:
+                self.image_label.setPixmap(pixmap)
+            self.image_label_layout.addWidget(self.image_label)
         except Exception as e:
             print(e)
 
