@@ -308,6 +308,8 @@ class MyGUI(QWidget):
             item.setData(TAG_STATE, tag_state)
 
             self.filelist.addItem(item)
+        self.filelist.setCurrentRow(0)
+        self.update_page()
 
     # Refreshes the contents of the page when a new image is selected
     def update_page(self):
