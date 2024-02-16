@@ -307,6 +307,9 @@ class MyGUI(QWidget):
                 else:
                     tag_state[key] = False
 
+            for key, value in char_results.items():
+                tag_state[key] = True
+
             for key, value in threshold_results.items():
                 tag_state[key] = True
 

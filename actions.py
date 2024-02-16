@@ -151,8 +151,11 @@ def predict(
             # If probability is below the threshold, stop adding to threshold results
             # Check if the label is a character label
             if label in char_labels and prob > char_threshold:
-                print(label)
                 result_char[label] = prob
+                # Remove the label from result_threshold if added to result_char
+                result_threshold.pop(label, None)
+                # Remove the label from result_all if added to result_char
+                result_all.pop(label, None)
 
             if prob < char_threshold:
                 break
