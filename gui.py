@@ -2,6 +2,7 @@ import os
 import sys
 from collections import OrderedDict
 
+import PIL.Image as Image
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory

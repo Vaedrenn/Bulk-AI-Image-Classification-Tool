@@ -11,6 +11,7 @@ import tensorflow as tf
 from PIL import Image
 from PIL.ExifTags import TAGS
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
+from PyQt5.QtCore import QRunnable, QThreadPool
 
 
 # loads the model from /models/
@@ -60,44 +61,34 @@ def load_char_labels(model_path: str | os.path) -> list[str]:
 
 
 # Preprocesses images from directory
-def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
-    preprocessed_images = []
-    image_filenames = os.listdir(directory)
-
-    # get dimensions from model
-    _, height, width, _ = model.input_shape
-
-    for filename in image_filenames:
-        image_path = os.path.join(directory, filename)
-        try:
-            # image = tf.keras.utils.load_img(
-            #                                 image_path,
-            #                                 grayscale=False,
-            #                                 color_mode='rgb',
-            #                                 target_size=(height, width),
-            #                                 interpolation='nearest',
-            #                                 keep_aspect_ratio=True
-            # )
-            # image = tf.keras.utils.img_to_array(image)
-
-            # Model only supports 3 channels
-            image = Image.open(image_path).convert('RGB')
-
-            image = np.asarray(image)
-            image = tf.image.resize(image,
-                                    size=(height, width),
-                                    method=tf.image.ResizeMethod.AREA,
-                                    preserve_aspect_ratio=True)
-            image = image.numpy()
-            image = dd.image.transform_and_pad_image(image, width, height)
-            image = image / 255.
-
-            preprocessed_images.append((image_path, image))
-
-        except Exception as e:
-            print(f"Error processing {image_path}: {e}")
-
-    return preprocessed_images
+# def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
+#     preprocessed_images = []
+#     image_filenames = os.listdir(directory)
+#
+#     # get dimensions from model
+#     _, height, width, _ = model.input_shape
+#
+#     for filename in image_filenames:
+#         image_path = os.path.join(directory, filename)
+#         try:
+#             # Model only supports 3 channels
+#             image = Image.open(image_path).convert('RGB')
+#
+#             image = np.asarray(image)
+#             image = tf.image.resize(image,
+#                                     size=(height, width),
+#                                     method=tf.image.ResizeMethod.AREA,
+#                                     preserve_aspect_ratio=True)
+#             image = image.numpy()
+#             image = dd.image.transform_and_pad_image(image, width, height)
+#             image = image / 255.
+#
+#             preprocessed_images.append((image_path, image))
+#
+#         except Exception as e:
+#             print(f"Error processing {image_path}: {e}")
+#
+#     return preprocessed_images
 
 
 # images need to preprocessed before using
@@ -236,32 +227,76 @@ def read_exif(image_path):
                 break  # Stop iteration once ImageDescription tag is found
 
 
-if __name__ == "__main__":
-    # Example usage:
-    image_path = r"tests/images/post_3261444.jpg"
-    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    directory = r"tests/images"
-    model = load_model(directory_path)
-    labels = load_labels(directory_path)
-    char_labels = load_char_labels(directory_path)
+class Runnable(QRunnable):
+    def __init__(self, image_path, size, preprocessed_images):
+        super().__init__()
+        self.image_path = image_path
+        self.size = size
+        self.preprocessed_images = preprocessed_images
 
+    def run(self):
+        try:
+            # Model only supports 3 channels
+            image = Image.open(self.image_path).convert('RGB')
+
+            image = np.asarray(image)
+            image = tf.image.resize(image,
+                                    size=self.size,
+                                    method=tf.image.ResizeMethod.AREA,
+                                    preserve_aspect_ratio=True)
+            image = image.numpy()
+            image = dd.image.transform_and_pad_image(image, self.size[0], self.size[1])
+            image = image / 255.
+
+            self.preprocessed_images.append((self.image_path, image))
+
+        except Exception as e:
+            print(f"Error processing {self.image_path}: {e}")
+
+
+def process_images_from_directory(model, directory):
+    preprocessed_images = []
+    image_filenames = os.listdir(directory)
+    pool = QThreadPool.globalInstance()
+
+    # get dimensions from model
     _, height, width, _ = model.input_shape
-    image = Image.open(image_path).convert('RGB')
+    size = (height, width)
 
-    image = np.asarray(image)
-    image = tf.image.resize(image,
-                            size=(height, width),
-                            method=tf.image.ResizeMethod.AREA,
-                            preserve_aspect_ratio=True)
-    image = image.numpy()
-    image = dd.image.transform_and_pad_image(image, width, height)
-    image = image / 255.
+    for filename in image_filenames:
+        image_path = os.path.join(directory, filename)
+        runnable = Runnable(image_path, size, preprocessed_images)
+        pool.start(runnable)
 
-    results = predict(model, labels, char_labels, image)
+    pool.waitForDone()
+    return preprocessed_images
 
-    result_threshold, result_all, result_rating, result_char, result_text = results
-    print(result_threshold)
-    print(result_all)
-    print(result_rating)
-    print(result_char)
-    print(result_text)
+# if __name__ == "__main__":
+#     # Example usage:
+#     image_path = r"tests/images/post_3261444.jpg"
+#     directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+#     directory = r"tests/images"
+#     model = load_model(directory_path)
+#     labels = load_labels(directory_path)
+#     char_labels = load_char_labels(directory_path)
+#
+#     _, height, width, _ = model.input_shape
+#     image = Image.open(image_path).convert('RGB')
+#
+#     image = np.asarray(image)
+#     image = tf.image.resize(image,
+#                             size=(height, width),
+#                             method=tf.image.ResizeMethod.AREA,
+#                             preserve_aspect_ratio=True)
+#     image = image.numpy()
+#     image = dd.image.transform_and_pad_image(image, width, height)
+#     image = image / 255.
+#
+#     results = predict(model, labels, char_labels, image)
+#
+#     result_threshold, result_all, result_rating, result_char, result_text = results
+#     print(result_threshold)
+#     print(result_all)
+#     print(result_rating)
+#     print(result_char)
+#     print(result_text)
