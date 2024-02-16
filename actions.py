@@ -46,7 +46,7 @@ def load_labels(model_path: str | os.path) -> list[str]:
     return labels
 
 
-def load_character_labels(model_path: str | os.path) -> list[str]:
+def load_char_labels(model_path: str | os.path) -> list[str]:
     print("Loading tags")
     path = os.path.join(model_path, "tags-character.txt")
     try:
@@ -101,17 +101,23 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
 
 
 # images need to preprocessed before using
-def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_threshold: float = 0.5
-            ) -> tuple[dict[str, float], dict[str, float], dict[str, float], str] | None:
+def predict(
+        model: tf.keras.Model,
+        labels: list[str],
+        char_labels: list[str],
+        image: np.ndarray,
+        score_threshold: float = 0.5,
+        char_threshold: float = 0.85
+) -> tuple[dict[str, float], dict[str, float], dict[str, float], dict[str, float], str] | None:
     try:
         # Make a prediction using the model
         probs = model.predict(image[None, ...])[0]
         probs = probs.astype(float)
 
         # Extract the last three tags as ratings
-        rating_labels = labels[-3:]
+        rating_labels = ["rating:safe", "rating:questionable", "rating:explicit"]
         rating_probs = probs[-3:]
-        labels = labels[:-3]
+
         probs = probs[:-3]
         result_rating = OrderedDict(zip(rating_labels, rating_probs))
 
@@ -120,6 +126,7 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
 
         result_all = OrderedDict()
         result_threshold = OrderedDict()
+        result_char = OrderedDict()
 
         # Iterate over the sorted indices
         for index in indices:
@@ -136,8 +143,26 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
             # Store result for labels above the threshold
             result_threshold[label] = prob
 
+        # do the same for character labels
+        for index in indices:
+            label = labels[index]
+            prob = probs[index]
+
+            # If probability is below the threshold, stop adding to threshold results
+            # Check if the label is a character label
+            if label in char_labels and prob > char_threshold:
+                print(label)
+                result_char[label] = prob
+
+            if prob < char_threshold:
+                break
+
         result_text = ', '.join(result_all.keys())
-        return result_threshold, result_all, result_rating, result_text
+
+        if len(result_threshold) > 0 or len(result_char) > 0:
+            return result_threshold, result_all, result_rating, result_char, result_text
+        else:
+            return None
 
     # unprocessed image
     except TypeError:
@@ -154,12 +179,18 @@ def predict(model: tf.keras.Model, labels: list[str], image: np.ndarray, score_t
 #    for image in results:
 #        filename = image[0]
 #        threshold_results, all_results, rating_results, text = image[1]
-def predict_all(model: tf.keras.Model, labels: list[str], directory: str | os.path, score_threshold: float = 0.5
-                ) -> list[tuple[Any, tuple[dict[str, float], dict[str, float], dict[str, float], str]]] | None:
+def predict_all(model: tf.keras.Model,
+                labels: list[str],
+                char_labels: list[str],
+                directory: str | os.path,
+                score_threshold: float = 0.5,
+                char_threshold: float = 0.85
+                ) -> (
+        list[tuple[Any, tuple[dict[str, float], dict[str, float], dict[str, float], dict[str, float], str]]] | None):
     images = process_images_from_directory(model, directory)
     processed_images = []
     for image in images:
-        result = predict(model, labels, image[1], score_threshold)
+        result = predict(model, labels, char_labels, image[1], score_threshold, char_threshold)
         if result is not None:
             processed_images.append((image[0], result))
     if processed_images is not None:
@@ -204,8 +235,30 @@ def read_exif(image_path):
 
 if __name__ == "__main__":
     # Example usage:
-    image_path = r"tests/images/1670120513144187.png"
-    new_description = "This is a new description for the image."
-    write_tags(image_path, new_description)
+    image_path = r"tests/images/post_3261444.jpg"
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    model = load_model(directory_path)
+    labels = load_labels(directory_path)
+    char_labels = load_char_labels(directory_path)
 
-    read_exif(image_path)
+    _, height, width, _ = model.input_shape
+    image = Image.open(image_path).convert('RGB')
+
+    image = np.asarray(image)
+    image = tf.image.resize(image,
+                            size=(height, width),
+                            method=tf.image.ResizeMethod.AREA,
+                            preserve_aspect_ratio=True)
+    image = image.numpy()
+    image = dd.image.transform_and_pad_image(image, width, height)
+    image = image / 255.
+
+    results = predict(model, labels, char_labels, image)
+
+    result_threshold, result_all, result_rating, result_char, result_text = results
+    print(result_threshold)
+    print(result_all)
+    print(result_rating)
+    print(result_char)
+    print(result_text)

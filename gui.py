@@ -229,7 +229,8 @@ class MyGUI(QWidget):
         slider_grid.addWidget(character_slider, 3, 0, 1, 3)
 
         submit_button = QPushButton("Submit")
-        submit_button.clicked.connect(lambda value: self.submit(dir_input.text(), general_threshold.value()))
+        submit_button.clicked.connect(
+            lambda value: self.submit(dir_input.text(), general_threshold.value(), character_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
         selected_images_button = QPushButton("Tag Selected images")
@@ -259,10 +260,11 @@ class MyGUI(QWidget):
             self.model = load_model(directory_path)
             self.labels = load_labels(directory_path)
             self.char_labels = load_character_labels(directory_path)
+            print(self.char_labels)
             return directory_path
 
     # Tags all images in the directory
-    def submit(self, directory, general_threshold):
+    def submit(self, directory, general_threshold, char_threshold):
         if self.model is None or directory is None or directory == '':
             return
         if self.labels is None or []:
@@ -273,9 +275,9 @@ class MyGUI(QWidget):
         from actions import predict_all
 
         score_threshold = general_threshold / 100
-
+        char_threshold = char_threshold / 100
         # filename, [threshold_results, all_results, rating_results, text]
-        results = predict_all(self.model, self.labels, directory, score_threshold)
+        results = predict_all(self.model, self.labels, self.char_labels, directory, score_threshold, char_threshold)
 
         if len(results) == 0 or results is None:
             QMessageBox.information(self, " ", "No duplicate images were found.")
@@ -285,11 +287,12 @@ class MyGUI(QWidget):
         self.filelist.clear()
         for image in results:
             file_path = image[0]
-            threshold_results, _, rating_results, text = image[1]
+            threshold_results, _, rating_results, char_results, text = image[1]
             filename = os.path.basename(file_path)
             item = QListWidgetItem(filename)
             item.setData(FILE_PATH, file_path)
             item.setData(GENERAL_RESULTS, threshold_results)
+            item.setData(CHARACTER_RESULTS, char_results)
             item.setData(RATING, rating_results)
             item.setData(TEXT, text)
 
@@ -450,6 +453,7 @@ if __name__ == '__main__':
     directory = r"tests/images"
     myGUI.model = actions.load_model(directory_path)
     myGUI.labels = actions.load_labels(directory_path)
-    myGUI.submit(directory, 50)
+    myGUI.char_labels = actions.load_char_labels(directory_path)
+    myGUI.submit(directory, 50, 85)
 
     sys.exit(app.exec_())
