@@ -35,7 +35,6 @@ def load_model(model_path: str | os.path) -> tf.keras.Model:
 
 # read tags
 def load_labels(model_path: str | os.path) -> list[str]:
-    print("Loading tags")
     path = os.path.join(model_path, "tags.txt")
     try:
         with open(path) as f:
@@ -48,7 +47,6 @@ def load_labels(model_path: str | os.path) -> list[str]:
 
 
 def load_char_labels(model_path: str | os.path) -> list[str]:
-    print("Loading tags")
     path = os.path.join(model_path, "tags-character.txt")
     try:
         with open(path) as f:
@@ -58,37 +56,6 @@ def load_char_labels(model_path: str | os.path) -> list[str]:
         return []
     print("Finished Loading tags")
     return labels
-
-
-# Preprocesses images from directory
-# def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
-#     preprocessed_images = []
-#     image_filenames = os.listdir(directory)
-#
-#     # get dimensions from model
-#     _, height, width, _ = model.input_shape
-#
-#     for filename in image_filenames:
-#         image_path = os.path.join(directory, filename)
-#         try:
-#             # Model only supports 3 channels
-#             image = Image.open(image_path).convert('RGB')
-#
-#             image = np.asarray(image)
-#             image = tf.image.resize(image,
-#                                     size=(height, width),
-#                                     method=tf.image.ResizeMethod.AREA,
-#                                     preserve_aspect_ratio=True)
-#             image = image.numpy()
-#             image = dd.image.transform_and_pad_image(image, width, height)
-#             image = image / 255.
-#
-#             preprocessed_images.append((image_path, image))
-#
-#         except Exception as e:
-#             print(f"Error processing {image_path}: {e}")
-#
-#     return preprocessed_images
 
 
 # images need to preprocessed before using
@@ -227,6 +194,7 @@ def read_exif(image_path):
                 break  # Stop iteration once ImageDescription tag is found
 
 
+# Preprocesses images from directory using qt's multiprocessing model
 class Runnable(QRunnable):
     def __init__(self, image_path, size, preprocessed_images):
         super().__init__()
@@ -254,7 +222,7 @@ class Runnable(QRunnable):
             print(f"Error processing {self.image_path}: {e}")
 
 
-def process_images_from_directory(model, directory):
+def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
     preprocessed_images = []
     image_filenames = os.listdir(directory)
     pool = QThreadPool.globalInstance()

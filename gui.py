@@ -1,16 +1,14 @@
 import os
 import sys
-from collections import OrderedDict
-
-import PIL.Image as Image
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory
+    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory, QProgressDialog
 from PyQt5.QtCore import Qt, QEvent
 from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
 from PyQt5.QtWidgets import QListWidgetItem
 
+from actionbox import actionbox
 from dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
@@ -24,6 +22,10 @@ TAG_STATE = Qt.UserRole + 5
 class MyGUI(QWidget):
     def __init__(self):
         super().__init__()
+        self.labels = []
+        self.char_labels = []
+        self.model = None
+
         self.image_label = None
         self.text_output = None
         self.general_tags = None
@@ -31,11 +33,9 @@ class MyGUI(QWidget):
         self.rating_tags = None
         self.image_label_layout = None
         self.image_label_widget = None
-        self.labels = []
-        self.char_labels = []
-        self.model = None
         self.action_box = None
         self.filelist = None
+
         self.initUI()
 
     def initUI(self):
@@ -90,7 +90,7 @@ class MyGUI(QWidget):
         self.image_label_layout.addWidget(self.image_label)
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.action_box = self.action_box_widget()
+        self.action_box = actionbox(self, frame2)
 
         self.text_output = QTextEdit()
         self.text_output.setPlaceholderText("Text Output")
@@ -156,168 +156,6 @@ class MyGUI(QWidget):
         self.setGeometry(100, 100, 1200, 800)
         self.setWindowTitle('PyQt Horizontal Layout with Labels and Borders')
         self.show()
-
-    def action_box_widget(self) -> QWidget:
-        action_box = QWidget(self)
-        action_layout = QVBoxLayout()
-        action_box.setLayout(action_layout)
-
-        selection_frame = QWidget()
-        slider_frame = QWidget()
-        button_frame = QWidget()
-        output_frame = QWidget()
-
-        selection_grid = QGridLayout()
-        slider_grid = QGridLayout()
-        button_grid = QHBoxLayout()
-        output_grid = QGridLayout()
-
-        selection_frame.setLayout(selection_grid)
-        slider_frame.setLayout(slider_grid)
-        button_frame.setLayout(button_grid)
-        output_frame.setLayout(output_grid)
-
-        action_layout.addWidget(selection_frame)
-        action_layout.addWidget(slider_frame)
-        action_layout.addWidget(button_frame)
-
-        model_input = QLineEdit()
-        model_input.setPlaceholderText("Select model directory...")
-        dir_input = QLineEdit()
-        dir_input.setPlaceholderText("Select directory...")
-        model_button = QPushButton("Browse")
-        dir_button = QPushButton("Browse")
-
-        model_button.clicked.connect(lambda value: self.browse_model(model_input))
-        dir_button.clicked.connect(lambda value: self.browse_directory(dir_input))
-
-        selection_grid.addWidget(model_input, 0, 0)
-        selection_grid.addWidget(model_button, 0, 1)
-        selection_grid.addWidget(dir_input, 1, 0)
-        selection_grid.addWidget(dir_button, 1, 1)
-
-        general_tag = QLabel("General Tags Threshold")
-        character_tag = QLabel("Character Tags Threshold")
-        general_slider = QSlider(Qt.Horizontal)
-        character_slider = QSlider(Qt.Horizontal)
-        general_threshold = QSpinBox()
-        character_threshold = QSpinBox()
-
-        general_slider.setMinimum(0)
-        general_slider.setMaximum(100)
-        general_slider.setTickInterval(1)
-        character_slider.setMinimum(0)
-        character_slider.setMaximum(100)
-        character_slider.setTickInterval(1)
-
-        general_threshold.setMinimum(0)
-        general_threshold.setMaximum(100)
-        character_threshold.setMinimum(0)
-        character_threshold.setMaximum(100)
-
-        general_slider.valueChanged.connect(lambda value: general_threshold.setValue(value))
-        character_slider.valueChanged.connect(lambda value: character_threshold.setValue(value))
-        general_threshold.valueChanged.connect(lambda value: general_slider.setValue(value))
-        character_threshold.valueChanged.connect(lambda value: character_slider.setValue(value))
-        general_threshold.setValue(50)
-        character_threshold.setValue(85)
-
-        slider_grid.addWidget(general_tag, 0, 0)
-        slider_grid.addWidget(general_threshold, 0, 2)
-        slider_grid.addWidget(general_slider, 1, 0, 1, 3)
-        slider_grid.addWidget(character_tag, 2, 0)
-        slider_grid.addWidget(character_threshold, 2, 2)
-        slider_grid.addWidget(character_slider, 3, 0, 1, 3)
-
-        submit_button = QPushButton("Submit")
-        submit_button.clicked.connect(
-            lambda value: self.submit(dir_input.text(), general_threshold.value(), character_threshold.value()))
-
-        one_image_button = QPushButton("Tag Current Image")
-        selected_images_button = QPushButton("Tag Selected images")
-        one_image_button.clicked.connect(lambda value: self.tag_image())
-        selected_images_button.clicked.connect(lambda value: self.tag_selected_images())
-
-        button_grid.addWidget(submit_button)
-        button_grid.addWidget(one_image_button)
-        button_grid.addWidget(selected_images_button)
-        return action_box
-
-    def browse_directory(self, line_edit):
-        directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
-        if directory_path:
-            line_edit.setText(directory_path)
-            return directory_path
-
-    def browse_model(self, line_edit):
-        directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
-        if not directory_path:
-            return
-        else:
-            print("importing actions")
-            from actions import load_model, load_labels, load_char_labels
-            print("Finished importing actions")
-            line_edit.setText(directory_path)
-            self.model = load_model(directory_path)
-            self.labels = load_labels(directory_path)
-            self.char_labels = load_char_labels(directory_path)
-            return directory_path
-
-    # Tags all images in the directory
-    def submit(self, directory, general_threshold, char_threshold):
-        if self.model is None or directory is None or directory == '':
-            return
-        if self.labels is None or []:
-            # Warn user that model correctly loaded but no labels are found
-            QMessageBox.warning(self, "Warning", "Model loaded successfully but no labels are found.")
-            return
-
-        from actions import predict_all
-
-        score_threshold = general_threshold / 100
-        char_threshold = char_threshold / 100
-        # filename, [threshold_results, all_results, rating_results, text]
-        results = predict_all(self.model, self.labels, self.char_labels, directory, score_threshold, char_threshold)
-
-        if len(results) == 0 or results is None:
-            QMessageBox.information(self, " ", "No duplicate images were found.")
-            return
-
-        # Populate filelist
-        self.filelist.clear()
-        for image in results:
-            file_path = image[0]
-            threshold_results, _, rating_results, char_results, text = image[1]
-            filename = os.path.basename(file_path)
-            item = QListWidgetItem(filename)
-            item.setData(FILE_PATH, file_path)
-            item.setData(GENERAL_RESULTS, threshold_results)
-            item.setData(CHARACTER_RESULTS, char_results)
-            item.setData(RATING, rating_results)
-            item.setData(TEXT, text)
-
-            # Build initial tag states
-            max_rating_key = max(rating_results, key=rating_results.get)
-            tag_state = {}
-
-            # Only check the content rating for threshold, check everything else
-            for key in rating_results.keys():
-                if key == max_rating_key:
-                    tag_state[key] = True
-                else:
-                    tag_state[key] = False
-
-            for key, value in char_results.items():
-                tag_state[key] = True
-
-            for key, value in threshold_results.items():
-                tag_state[key] = True
-
-            item.setData(TAG_STATE, tag_state)
-
-            self.filelist.addItem(item)
-        self.filelist.setCurrentRow(0)
-        self.update_page()
 
     # Refreshes the contents of the page when a new image is selected
     def update_page(self):
@@ -394,31 +232,6 @@ class MyGUI(QWidget):
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
 
-    # Writes the tags to exif
-    def tag_image(self):
-        if not self.model:
-            return False
-        if not self.labels:
-            return False
-        from actions import write_tags
-        current_image = self.filelist.currentItem()
-        info = current_image.data(TEXT)
-        image_path = current_image.data(FILE_PATH)
-        write_tags(image_path, info)
-
-    # Writes tags to exif for all selected images
-    def tag_selected_images(self):
-        if not self.model:
-            return False
-        if not self.labels:
-            return False
-        from actions import write_tags
-        selected_rows = self.filelist.getCheckedRows()
-        for row in selected_rows:
-            item = self.filelist.item(row)
-            info = item.data(TEXT)
-            image_path = item.data(FILE_PATH)
-            write_tags(image_path, info)
 
     def eventFilter(self, obj, event):
         # arrow key navigation
@@ -454,9 +267,10 @@ if __name__ == '__main__':
 
     directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
     directory = r"tests/images"
-    myGUI.model = actions.load_model(directory_path)
-    myGUI.labels = actions.load_labels(directory_path)
-    myGUI.char_labels = actions.load_char_labels(directory_path)
-    myGUI.submit(directory, 50, 85)
+    myGUI.action_box.model = actions.load_model(directory_path)
+    myGUI.action_box.labels = actions.load_labels(directory_path)
+    myGUI.action_box.char_labels = actions.load_char_labels(directory_path)
+
+    myGUI.action_box.submit(directory, 50, 85)
 
     sys.exit(app.exec_())

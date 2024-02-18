@@ -7,6 +7,8 @@ import tensorflow as tf
 import deepdanbooru as dd
 from PIL import Image, ExifTags
 
+
+
 path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
 # Define paths for test images and info
@@ -93,3 +95,5 @@ def test_predict_all(model, labels):
 def test_write_tags():
     path = r"tests/images/test.png"
     write_tags(path, "TEST")
+
+
