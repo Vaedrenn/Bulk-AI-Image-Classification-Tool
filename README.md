@@ -1,4 +1,4 @@
-# Bulk AI Image classification Tool
+# Bulk AI Image Classification Tool
 
 An image tagger based on deepdanbooru AI
 
@@ -36,4 +36,4 @@ For the time being models should be in the following format:
         └── tags.txt (required)
         └── tags-character.txt (optional)
 ```
-- Models and tags are loaded via action_bo![img_1.png](img.png)x's load_model and load_tags function, which look for the above files respectively
+- Models and tags are loaded via action_box's load_model and load_tags function, which look for the above files respectively
