@@ -1,4 +1,4 @@
-# Bulk AI Image classification Tool
+# Bulk AI Image Classification Tool
 
 An image tagger based on deepdanbooru AI
 
