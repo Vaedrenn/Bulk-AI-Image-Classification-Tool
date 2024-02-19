@@ -27,12 +27,13 @@ Anime style image classification model based on the Gwern 2021 dataset. Best use
 Download: https://github.com/KichangKim/DeepDanbooru/releases
 
 ### Custom Models
-For the time being models should be in the following format
+For the time being models should be in the following format:
 ```
 /dd-image-tagger/
 └── /models/
     └── /model_name/
-        ├── model-resnet_custom_v3.h5
-        └── tags.txt
+        ├── model-resnet_custom_v3.h5 (required)
+        └── tags.txt (required)
         └── tags-character.txt (optional)
 ```
+- Models and tags are loaded via action_bo![img_1.png](img.png)x's load_model and load_tags function, which look for the above files respectively

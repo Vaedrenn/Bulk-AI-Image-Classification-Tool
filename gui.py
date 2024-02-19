@@ -1,14 +1,13 @@
-import os
 import sys
+
+from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox, QSizePolicy, QStyleFactory, QProgressDialog
-from PyQt5.QtCore import Qt, QEvent
+    QTextEdit, QSizePolicy, QStyleFactory
+
 from CheckListWidget import CheckListWidget
 from TupleCheckListWidget import TupleCheckListWidget
-from PyQt5.QtWidgets import QListWidgetItem
-
-from actionbox import actionbox
+from action_box import actionbox
 from dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
@@ -154,7 +153,7 @@ class MyGUI(QWidget):
 
         # Set window properties
         self.setGeometry(100, 100, 1200, 800)
-        self.setWindowTitle('PyQt Horizontal Layout with Labels and Borders')
+        self.setWindowTitle('Bulk AI Image Classification Tool')
         self.show()
 
     # Refreshes the contents of the page when a new image is selected
@@ -182,7 +181,8 @@ class MyGUI(QWidget):
 
             # scale down image if it's bigger than the container
             if pixmap.width() > width or pixmap.height() > height:
-                self.image_label.setPixmap(pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio, Qt.FastTransformation))
+                self.image_label.setPixmap(
+                    pixmap.scaled(width, height, Qt.AspectRatioMode.KeepAspectRatio, Qt.FastTransformation))
             else:
                 self.image_label.setPixmap(pixmap)
             self.image_label_layout.addWidget(self.image_label)
@@ -231,7 +231,6 @@ class MyGUI(QWidget):
     def clear_tags(self):
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
-
 
     def eventFilter(self, obj, event):
         # arrow key navigation
