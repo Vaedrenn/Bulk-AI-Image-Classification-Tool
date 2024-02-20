@@ -5,7 +5,9 @@ from PyQt5.QtWidgets import QListWidgetItem
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
-from actions import load_model, load_labels, load_char_labels, write_tags, predict_all
+from predict_all import  predict_all
+from load_actions import load_model, load_labels, load_char_labels
+from exif_actions import write_tags
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -117,7 +119,7 @@ class actionbox(QWidget):
             return directory_path
 
     def browse_model(self, line_edit):
-        directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
+        directory_path = QFileDialog.getOpenFileName()
         if not directory_path:
             return
         else:
@@ -178,6 +180,7 @@ class actionbox(QWidget):
             item.setData(TAG_STATE, tag_state)
 
             self.main_widget.filelist.addItem(item)
+        self.main_widget.results = self.main_widget.filelist.model()  # set a pointer to listwidget's model
         self.main_widget.filelist.setCurrentRow(0)
         self.main_widget.update_page()
 

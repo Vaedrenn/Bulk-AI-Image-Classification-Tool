@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from actions import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
+from predict_all import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
 import tensorflow as tf
 import deepdanbooru as dd
 from PIL import Image
@@ -11,7 +11,7 @@ import pytest
 import tensorflow as tf
 from PIL import Image
 
-from actions import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
+from predict_all import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
 
 path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
