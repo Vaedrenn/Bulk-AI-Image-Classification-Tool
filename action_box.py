@@ -5,9 +5,6 @@ from PyQt5.QtWidgets import QListWidgetItem
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
-from predict_all import  predict_all
-from load_actions import load_model, load_labels, load_char_labels
-from exif_actions import write_tags
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -73,16 +70,16 @@ class actionbox(QWidget):
         general_threshold = QSpinBox()
         character_threshold = QSpinBox()
 
-        general_slider.setMinimum(0)
+        general_slider.setMinimum(1)  # Anything lower than 1 will result in long load times when updating page
         general_slider.setMaximum(100)
         general_slider.setTickInterval(1)
-        character_slider.setMinimum(0)
+        character_slider.setMinimum(1)
         character_slider.setMaximum(100)
         character_slider.setTickInterval(1)
 
-        general_threshold.setMinimum(0)
+        general_threshold.setMinimum(1)
         general_threshold.setMaximum(100)
-        character_threshold.setMinimum(0)
+        character_threshold.setMinimum(1)
         character_threshold.setMaximum(100)
 
         general_slider.valueChanged.connect(lambda value: general_threshold.setValue(value))
@@ -119,10 +116,11 @@ class actionbox(QWidget):
             return directory_path
 
     def browse_model(self, line_edit):
-        directory_path = QFileDialog.getOpenFileName()
+        directory_path = QFileDialog.getExistingDirectory(None, "Select Model")
         if not directory_path:
             return
         else:
+            from load_actions import load_model, load_labels, load_char_labels
             line_edit.setText(directory_path)
             self.model = load_model(directory_path)
             self.labels = load_labels(directory_path)
@@ -140,7 +138,8 @@ class actionbox(QWidget):
 
         score_threshold = general_threshold / 100
         char_threshold = char_threshold / 100
-        # filename, [threshold_results, all_results, rating_results, text]
+
+        from predict_all import predict_all
         results = predict_all(self.model, self.labels, self.char_labels, directory, score_threshold, char_threshold)
 
         if len(results) == 0 or results is None:
@@ -189,6 +188,8 @@ class actionbox(QWidget):
             return False
         if not self.labels:
             return False
+
+        from exif_actions import write_tags
         current_image = self.main_widget.filelist.currentItem()
         info = current_image.data(TEXT)
         image_path = current_image.data(FILE_PATH)
@@ -200,6 +201,8 @@ class actionbox(QWidget):
             return False
         if not self.labels:
             return False
+
+        from exif_actions import write_tags
         selected_rows = self.main_widget.filelist.getCheckedRows()
         for row in selected_rows:
             item = self.filelist.item(row)
