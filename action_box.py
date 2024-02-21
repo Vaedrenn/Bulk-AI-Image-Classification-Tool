@@ -1,10 +1,9 @@
 import os
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QListWidgetItem
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
-
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -120,16 +119,30 @@ class actionbox(QWidget):
         if not directory_path:
             return
         else:
-            from load_actions import load_model, load_labels, load_char_labels
             line_edit.setText(directory_path)
-            self.model = load_model(directory_path)
-            self.labels = load_labels(directory_path)
-            self.char_labels = load_char_labels(directory_path)
-            return directory_path
+            self.thread = QThread()
+            self.worker = ModelWorker(directory_path)
+
+            self.worker.moveToThread(self.thread)
+
+            self.thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.on_model_loaded)
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+
+            self.thread.start()
+
+    def on_model_loaded(self, results):
+        model, labels, char_labels = results
+        self.model = model
+        self.labels = labels
+        self.char_labels = char_labels
 
     # Tags all images in the directory
     def submit(self, directory, general_threshold, char_threshold):
         if self.model is None or directory is None or directory == '':
+            print("No model found")
             return
         if self.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
@@ -209,3 +222,18 @@ class actionbox(QWidget):
             info = item.data(TEXT)
             image_path = item.data(FILE_PATH)
             write_tags(image_path, info)
+
+
+class ModelWorker(QObject):
+    finished = pyqtSignal(tuple)
+
+    def __init__(self, directory_path):
+        super().__init__()
+        self.directory_path = directory_path
+
+    def run(self):
+        from load_actions import load_model, load_labels, load_char_labels
+        model = load_model(self.directory_path)
+        labels = load_labels(self.directory_path)
+        char_labels = load_char_labels(self.directory_path)
+        self.finished.emit((model, labels, char_labels))
