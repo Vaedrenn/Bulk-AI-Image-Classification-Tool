@@ -98,7 +98,7 @@ def predict(
                 break
 
             # Store result for labels above the threshold
-            if prob > score_threshold:
+            if prob > score_threshold and label not in char_labels:
                 result_threshold[label] = prob
             if prob > char_threshold and label in char_labels:
                 result_char[label] = prob
@@ -145,32 +145,33 @@ def predict_all(model: tf.keras.Model,
         print("No results within threshold: ", score_threshold)
         return None
 
-# if __name__ == "__main__":
-#     # Example usage:
-#     image_path = r"tests/images/post_3261444.jpg"
-#     directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-#     directory = r"tests/images"
-#     model = load_model(directory_path)
-#     labels = load_labels(directory_path)
-#     char_labels = load_char_labels(directory_path)
-#
-#     _, height, width, _ = model.input_shape
-#     image = Image.open(image_path).convert('RGB')
-#
-#     image = np.asarray(image)
-#     image = tf.image.resize(image,
-#                             size=(height, width),
-#                             method=tf.image.ResizeMethod.AREA,
-#                             preserve_aspect_ratio=True)
-#     image = image.numpy()
-#     image = dd.image.transform_and_pad_image(image, width, height)
-#     image = image / 255.
-#
-#     results = predict(model, labels, char_labels, image)
-#
-#     result_threshold, result_all, result_rating, result_char, result_text = results
-#     print(result_threshold)
-#     print(result_all)
-#     print(result_rating)
-#     print(result_char)
-#     print(result_text)
+if __name__ == "__main__":
+    # Example usage:
+    image_path = r"tests/images/post_3261444.jpg"
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    from load_actions import load_model, load_labels, load_char_labels
+    model = load_model(directory_path)
+    labels = load_labels(directory_path)
+    char_labels = load_char_labels(directory_path)
+
+    _, height, width, _ = model.input_shape
+    image = Image.open(image_path).convert('RGB')
+
+    image = np.asarray(image)
+    image = tf.image.resize(image,
+                            size=(height, width),
+                            method=tf.image.ResizeMethod.AREA,
+                            preserve_aspect_ratio=True)
+    image = image.numpy()
+    image = dd.image.transform_and_pad_image(image, width, height)
+    image = image / 255.
+
+    results = predict(model, labels, char_labels, image)
+
+    result_threshold, result_all, result_rating, result_char, result_text = results
+    print(result_threshold)
+    print(result_all)
+    print(result_rating)
+    print(result_char)
+    print(result_text)
