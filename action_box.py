@@ -1,7 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
-from PyQt5.QtWidgets import QListWidgetItem
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QCoreApplication
+from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog, QApplication
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
@@ -47,7 +48,7 @@ class actionbox(QWidget):
         action_layout.addWidget(slider_frame)
         action_layout.addWidget(button_frame)
 
-        self.model_input = QLineEdit()
+        self.model_input = QLineEdit("models/deepdanbooru-v3-20211112-sgd-e28")
         self.model_input.setPlaceholderText("Select model directory...")
         self.dir_input = QLineEdit()
         self.dir_input.setPlaceholderText("Select directory...")
@@ -120,7 +121,17 @@ class actionbox(QWidget):
             return
         else:
             line_edit.setText(directory_path)
-            self.thread = QThread()
+
+            self.pd = QProgressDialog("Loading Model...", None, 0, 0, self.main_widget)
+            self.pd.setWindowModality(QtCore.Qt.WindowModal)
+            self.pd.setCancelButton(None)
+            self.pd.setWindowTitle("Please wait")
+            self.pd.setLabelText("Loading Model...")
+            self.pd.setFixedSize(250, 150)
+            self.pd.show()
+            # self.pd.forceShow()  # use instead of above incase it does not show
+
+            self.thread = QThread(self.main_widget)
             self.worker = ModelWorker(directory_path)
 
             self.worker.moveToThread(self.thread)
@@ -128,6 +139,7 @@ class actionbox(QWidget):
             self.thread.started.connect(self.worker.run)
             self.worker.finished.connect(self.on_model_loaded)
             self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.pd.close)
             self.worker.finished.connect(self.worker.deleteLater)
             self.thread.finished.connect(self.thread.deleteLater)
 
