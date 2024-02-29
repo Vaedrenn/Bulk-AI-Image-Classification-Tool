@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QCoreApplication
 from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog, QApplication
@@ -109,12 +110,14 @@ class actionbox(QWidget):
         button_grid.addWidget(one_image_button)
         button_grid.addWidget(selected_images_button)
 
+    # looks for the target directory where images are to be tagged
     def browse_directory(self, line_edit):
         directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
         if directory_path:
             line_edit.setText(directory_path)
             return directory_path
 
+    # Load model from directory for gui
     def browse_model(self, line_edit):
         directory_path = QFileDialog.getExistingDirectory(None, "Select Model")
         if not directory_path:
@@ -123,11 +126,12 @@ class actionbox(QWidget):
             line_edit.setText(directory_path)
 
             self.pd = QProgressDialog("Loading Model...", None, 0, 0, self.main_widget)
+            # Prevents the user from interacting with the gui until finished
             self.pd.setWindowModality(QtCore.Qt.WindowModal)
             self.pd.setCancelButton(None)
             self.pd.setWindowTitle("Please wait")
             self.pd.setLabelText("Loading Model...")
-            self.pd.setFixedSize(250, 150)
+            self.pd.setFixedSize(250, 100)
             self.pd.show()
             # self.pd.forceShow()  # use instead of above incase it does not show
 
@@ -145,6 +149,7 @@ class actionbox(QWidget):
 
             self.thread.start()
 
+    # utility function for loading models and tags
     def on_model_loaded(self, results):
         model, labels, char_labels = results
         self.model = model
@@ -168,11 +173,19 @@ class actionbox(QWidget):
         results = predict_all(self.model, self.labels, self.char_labels, directory, score_threshold, char_threshold)
 
         if len(results) == 0 or results is None:
-            QMessageBox.information(self, " ", "No duplicate images were found.")
+            QMessageBox.information(self, " ", "No results within threshold.")
             return
+        # process images before predicting
+
+        # predict
 
         # Populate filelist
+        self.proc_results(results)
+
+    # process results and refresh the page
+    def proc_results(self, results):
         self.main_widget.filelist.clear()
+        # Populate filelist
         for image in results:
             file_path = image[0]
             threshold_results, _, rating_results, char_results, text = image[1]
@@ -208,6 +221,7 @@ class actionbox(QWidget):
         self.main_widget.filelist.setCurrentRow(0)
         self.main_widget.update_page()
 
+    # Tags just one image
     def tag_image(self):
         if not self.model:
             return False
@@ -236,6 +250,7 @@ class actionbox(QWidget):
             write_tags(image_path, info)
 
 
+# Worker Object for qthreading, loads models and tags from directory
 class ModelWorker(QObject):
     finished = pyqtSignal(tuple)
 

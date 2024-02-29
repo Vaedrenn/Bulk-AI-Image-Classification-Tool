@@ -6,7 +6,7 @@ An image tagger based on deepdanbooru AI
 
 ## Installation and Running
 ### Prerequisites
-+ Python 3.7+
++ Python 3.7 - 3.11
 + Windows 10/11
 ### Installation on Windows 10/11 using release package
 Soon
@@ -18,6 +18,7 @@ pip install -r requirements.txt
 pip install .
 python gui.py
 ```
+- As of 02/28/2024 tensorflow-io does not have a working package for python 3.12
 ## Models
 Models are not included, must be downloaded seperately. Currently only supports deepdanbooru
 
