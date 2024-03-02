@@ -264,27 +264,27 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     myGUI = MyGUI()
 
-    # import time
-    #
-    # # Start timing
-    # start_time = time.time()
-    #
-    # from load_actions import load_model, load_labels, load_char_labels
-    #
-    # directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    # directory = r"tests/images"
-    #
-    # myGUI.action_box.model = load_model(directory_path)
-    # myGUI.action_box.labels = load_labels(directory_path)
-    # myGUI.action_box.char_labels = load_char_labels(directory_path)
-    #
-    # myGUI.action_box.submit(directory, 50, 85)
-    #
-    # # End timing
-    # end_time = time.time()
-    #
-    # # Calculate execution time
-    # execution_time = end_time - start_time
-    # print("Execution time:", execution_time, "seconds")
+    import time
+
+    # Start timing
+    start_time = time.time()
+
+    from load_actions import load_model, load_labels, load_char_labels
+
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+
+    myGUI.action_box.model = load_model(directory_path)
+    myGUI.action_box.labels = load_labels(directory_path)
+    myGUI.action_box.char_labels = load_char_labels(directory_path)
+
+    myGUI.action_box.submit(directory, 50, 85)
+
+    # End timing
+    end_time = time.time()
+
+    # Calculate execution time
+    execution_time = end_time - start_time
+    print("Execution time:", execution_time, "seconds")
 
     sys.exit(app.exec_())

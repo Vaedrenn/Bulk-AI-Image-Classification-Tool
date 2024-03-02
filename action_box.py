@@ -23,6 +23,7 @@ class actionbox(QWidget):
         self.model = None
         self.char_labels = None
         self.labels = None
+        self.images = []
         self.main_widget = main_widget
         self.initUI()
 
@@ -141,7 +142,7 @@ class actionbox(QWidget):
             self.worker.moveToThread(self.thread)
 
             self.thread.started.connect(self.worker.run)
-            self.worker.finished.connect(self.on_model_loaded)
+            self.worker.finished.connect(self._load_results)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.pd.close)
             self.worker.finished.connect(self.worker.deleteLater)
@@ -150,7 +151,7 @@ class actionbox(QWidget):
             self.thread.start()
 
     # utility function for loading models and tags
-    def on_model_loaded(self, results):
+    def _load_results(self, results):
         model, labels, char_labels = results
         self.model = model
         self.labels = labels
@@ -168,22 +169,34 @@ class actionbox(QWidget):
 
         score_threshold = general_threshold / 100
         char_threshold = char_threshold / 100
+        self.pd = QProgressDialog("Preprocessing Images...", None, 0, 100, self)
+        self.pd.setWindowModality(QtCore.Qt.WindowModal)
+        self.pd.setCancelButton(None)
+        self.pd.setWindowTitle("Please wait")
+        self.pd.setLabelText("Preprocessing Images...")
+        self.pd.setFixedSize(250, 150)
+        self.pd.show()
+        # self.pd.forceShow()  # use instead of above incase it does not show
 
-        from predict_all import predict_all
-        results = predict_all(self.model, self.labels, self.char_labels, directory, score_threshold, char_threshold)
-
-        if len(results) == 0 or results is None:
-            QMessageBox.information(self, " ", "No results within threshold.")
-            return
         # process images before predicting
+        self.thread = QThread(self.main_widget)
+        self.worker = ImageWorker(self.model, directory, self.labels, self.char_labels, score_threshold, char_threshold)
 
-        # predict
+        self.worker.moveToThread(self.thread)
 
-        # Populate filelist
-        self.proc_results(results)
+        self.thread.started.connect(self.worker.run)
+        self.worker.results.connect(self.process_results)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.pd.close)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        # assign images to results
+
+        self.thread.start()
 
     # process results and refresh the page
-    def proc_results(self, results):
+    def process_results(self, results):
         self.main_widget.filelist.clear()
         # Populate filelist
         for image in results:
@@ -264,3 +277,35 @@ class ModelWorker(QObject):
         labels = load_labels(self.directory_path)
         char_labels = load_char_labels(self.directory_path)
         self.finished.emit((model, labels, char_labels))
+
+
+# Worker Object for qthreading, predicts all
+class ImageWorker(QObject):
+    finished = pyqtSignal()
+    results = pyqtSignal(list)
+    progress = pyqtSignal(float)
+
+    def __init__(self, model, directory, labels, char_labels, score, char):
+        super().__init__()
+        self.model = model
+        self.directory = directory
+        self.labels = labels
+        self.char_labels = char_labels
+        self.score_threshold = score
+        self.char_threshold = char
+        self.processed_images = []
+
+    def run(self):
+        from predict_all import process_images_from_directory, predict
+        images = process_images_from_directory(self.model, self.directory)
+
+        for image in images:
+            result = predict(self.model, self.labels, self.char_labels, image[1], self.score_threshold,
+                             self.char_threshold)
+            if result is not None:
+                self.processed_images.append((image[0], result))
+        if len(self.processed_images) > 0:
+            self.results.emit(self.processed_images)
+        else:
+            print("No results within threshold: ", self.score_threshold)
+        self.finished.emit()
