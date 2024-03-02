@@ -197,6 +197,9 @@ class actionbox(QWidget):
 
     # process results and refresh the page
     def process_results(self, results):
+        if len(results) == 0 or None:
+            QMessageBox.information(self, "No results", "No results within threshold")
+
         self.main_widget.filelist.clear()
         # Populate filelist
         for image in results:
@@ -306,6 +309,4 @@ class ImageWorker(QObject):
                 self.processed_images.append((image[0], result))
         if len(self.processed_images) > 0:
             self.results.emit(self.processed_images)
-        else:
-            print("No results within threshold: ", self.score_threshold)
         self.finished.emit()
