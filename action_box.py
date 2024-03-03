@@ -185,6 +185,8 @@ class actionbox(QWidget):
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
+        self.worker.max.connect(self._set_max)
+        self.worker.progress.connect(self._update_progress)
         self.worker.results.connect(self.process_results)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.pd.close)
@@ -194,6 +196,13 @@ class actionbox(QWidget):
         # assign images to results
 
         self.thread.start()
+
+    def _set_max(self, maximum):
+        self.pd.setLabelText("Predicting Tags")
+        self.pd.setMaximum(maximum)
+
+    def _update_progress(self, val):
+        self.pd.setValue(self.pd.value() + val)
 
     # process results and refresh the page
     def process_results(self, results):
@@ -285,8 +294,10 @@ class ModelWorker(QObject):
 # Worker Object for qthreading, predicts all
 class ImageWorker(QObject):
     finished = pyqtSignal()
+    cancelled = pyqtSignal()
+    max = pyqtSignal(int)
     results = pyqtSignal(list)
-    progress = pyqtSignal(float)
+    progress = pyqtSignal(int)
 
     def __init__(self, model, directory, labels, char_labels, score, char):
         super().__init__()
@@ -301,12 +312,16 @@ class ImageWorker(QObject):
     def run(self):
         from predict_all import process_images_from_directory, predict
         images = process_images_from_directory(self.model, self.directory)
+        val = len(images)
+        self.max.emit(val*2)
+        self.progress.emit(val)
 
         for image in images:
             result = predict(self.model, self.labels, self.char_labels, image[1], self.score_threshold,
                              self.char_threshold)
             if result is not None:
                 self.processed_images.append((image[0], result))
+            self.progress.emit(1)
         if len(self.processed_images) > 0:
             self.results.emit(self.processed_images)
         self.finished.emit()
