@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "Bulk_AI_Image_Classification_Tool"
+version = "0.1.0"
+description = "This tool allows you to bulk tag images using tensorflow + deepdanbooru"
+authors = ["vaedrenn"]
+license = "GNU GENERAL PUBLIC LICENSE"
+readme = "README.md"
+
+packages = [
+    { include = "src", from = "." }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.12"
+deepdanbooru = "^1.0.2"
+numpy = "^1.26.4"
+pillow = "^10.2.0"
+pyqt5 = "^5.15.10"
+tensorflow = "^2.15.0"
+tensorflow-io = "0.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

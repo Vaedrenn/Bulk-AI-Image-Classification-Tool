@@ -1,9 +1,8 @@
 import os
 
-import numpy as np
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QCoreApplication
-from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog, QApplication
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
+from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
@@ -50,7 +49,7 @@ class actionbox(QWidget):
         action_layout.addWidget(slider_frame)
         action_layout.addWidget(button_frame)
 
-        self.model_input = QLineEdit("models/deepdanbooru-v3-20211112-sgd-e28")
+        self.model_input = QLineEdit()
         self.model_input.setPlaceholderText("Select model directory...")
         self.dir_input = QLineEdit()
         self.dir_input.setPlaceholderText("Select directory...")
@@ -253,7 +252,7 @@ class actionbox(QWidget):
         if not self.labels:
             return False
 
-        from exif_actions import write_tags
+        from src.commands.exif_actions import write_tags
         current_image = self.main_widget.filelist.currentItem()
         info = current_image.data(TEXT)
         image_path = current_image.data(FILE_PATH)
@@ -266,7 +265,7 @@ class actionbox(QWidget):
         if not self.labels:
             return False
 
-        from exif_actions import write_tags
+        from src.commands.exif_actions import write_tags
         selected_rows = self.main_widget.filelist.getCheckedRows()
         for row in selected_rows:
             item = self.filelist.item(row)
@@ -284,7 +283,7 @@ class ModelWorker(QObject):
         self.directory_path = directory_path
 
     def run(self):
-        from load_actions import load_model, load_labels, load_char_labels
+        from src.commands.load_actions import load_model, load_labels, load_char_labels
         model = load_model(self.directory_path)
         labels = load_labels(self.directory_path)
         char_labels = load_char_labels(self.directory_path)
@@ -310,7 +309,7 @@ class ImageWorker(QObject):
         self.processed_images = []
 
     def run(self):
-        from predict_all import process_images_from_directory, predict
+        from src.commands.predict_all import process_images_from_directory, predict
         images = process_images_from_directory(self.model, self.directory)
         val = len(images)
         self.max.emit(val*2)

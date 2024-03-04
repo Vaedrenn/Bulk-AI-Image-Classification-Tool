@@ -1,14 +1,12 @@
-import sys
-
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QSizePolicy, QStyleFactory
 
-from CheckListWidget import CheckListWidget
-from TupleCheckListWidget import TupleCheckListWidget
-from action_box import actionbox
-from dark_palette import create_dark_palette
+from src.gui.CheckListWidget import CheckListWidget
+from src.gui.TupleCheckListWidget import TupleCheckListWidget
+from src.gui.action_box import actionbox
+from src.gui.dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -18,7 +16,7 @@ TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
 
 
-class MyGUI(QWidget):
+class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.labels = []
@@ -258,33 +256,3 @@ class MyGUI(QWidget):
 
     def hideEvent(self, event):
         self.filelist.removeEventFilter(self)
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    myGUI = MyGUI()
-
-    import time
-
-    # Start timing
-    start_time = time.time()
-
-    from load_actions import load_model, load_labels, load_char_labels
-
-    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
-    directory = r"tests/images"
-
-    myGUI.action_box.model = load_model(directory_path)
-    myGUI.action_box.labels = load_labels(directory_path)
-    myGUI.action_box.char_labels = load_char_labels(directory_path)
-
-    myGUI.action_box.submit(directory, 50, 85)
-
-    # End timing
-    end_time = time.time()
-
-    # Calculate execution time
-    execution_time = end_time - start_time
-    print("Execution time:", execution_time, "seconds")
-
-    sys.exit(app.exec_())

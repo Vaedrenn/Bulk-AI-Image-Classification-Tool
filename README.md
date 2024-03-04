@@ -6,8 +6,9 @@ An image tagger based on deepdanbooru AI
 
 ## Installation and Running
 ### Prerequisites
-+ Python 3.7 - 3.11
++ Python 3.9 - 3.11
 + Windows 10/11
++ 3GB+ of RAM
 ### Installation on Windows 10/11 using release package
 Soon
 
@@ -16,9 +17,10 @@ Assuming you've already set up the virtual environment
 ```bash
 pip install -r requirements.txt
 pip install .
-python gui.py
+python main_widget.py
 ```
 - As of 02/28/2024 tensorflow-io does not have a working package for python 3.12
+- Tensorflow no longer support GPUs on Windows as of Version 2.10
 ## Models
 Models are not included, must be downloaded seperately. Currently only supports deepdanbooru
 

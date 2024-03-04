@@ -1,19 +1,14 @@
-import numpy as np
-import pytest
-
-from predict_all import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
-import tensorflow as tf
-import deepdanbooru as dd
-from PIL import Image
 import deepdanbooru as dd
 import numpy as np
 import pytest
 import tensorflow as tf
 from PIL import Image
 
-from predict_all import load_model, load_labels, predict, process_images_from_directory, predict_all, write_tags
+from src.commands.exif_actions import write_tags
+from src.commands import load_model, load_labels
+from src.commands import  predict, process_images_from_directory, predict_all
 
-path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+path = r"../models/deepdanbooru-v3-20211112-sgd-e28"
 
 # Define paths for test images and info
 TEST_IMAGE_PATH = "test_image.jpg"
@@ -72,13 +67,13 @@ def test_predict(model, labels):
 
 
 def test_process_all(model, labels):
-    dir = r"tests/images"
+    dir = r"images"
     images = process_images_from_directory(model, dir)
     assert images
 
 
 def test_predict_all(model, labels):
-    dir = r"tests/images"
+    dir = r"images"
     results = predict_all(model, labels, dir, 0.5)
 
     assert results
