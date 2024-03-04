@@ -6,6 +6,10 @@ from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
+from src.commands.predict_all import process_images_from_directory, predict
+from src.commands.exif_actions import write_tags
+from src.commands.load_actions import load_model, load_labels, load_char_labels
+
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
 CHARACTER_RESULTS = Qt.UserRole + 2
@@ -252,7 +256,6 @@ class actionbox(QWidget):
         if not self.labels:
             return False
 
-        from src.commands.exif_actions import write_tags
         current_image = self.main_widget.filelist.currentItem()
         info = current_image.data(TEXT)
         image_path = current_image.data(FILE_PATH)
@@ -265,7 +268,6 @@ class actionbox(QWidget):
         if not self.labels:
             return False
 
-        from src.commands.exif_actions import write_tags
         selected_rows = self.main_widget.filelist.getCheckedRows()
         for row in selected_rows:
             item = self.filelist.item(row)
@@ -283,7 +285,6 @@ class ModelWorker(QObject):
         self.directory_path = directory_path
 
     def run(self):
-        from src.commands.load_actions import load_model, load_labels, load_char_labels
         model = load_model(self.directory_path)
         labels = load_labels(self.directory_path)
         char_labels = load_char_labels(self.directory_path)
@@ -309,7 +310,6 @@ class ImageWorker(QObject):
         self.processed_images = []
 
     def run(self):
-        from src.commands.predict_all import process_images_from_directory, predict
         images = process_images_from_directory(self.model, self.directory)
         val = len(images)
         self.max.emit(val*2)

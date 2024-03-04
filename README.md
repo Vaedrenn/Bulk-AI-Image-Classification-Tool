@@ -10,14 +10,14 @@ An image tagger based on deepdanbooru AI
 + Windows 10/11
 + 3GB+ of RAM
 ### Installation on Windows 10/11 using release package
-Soon
+https://github.com/Vaedrenn/Bulk-AI-Image-Classification-Tool/releases/tag/0.1.0
 
 ### Building from source
 Assuming you've already set up the virtual environment
 ```bash
 pip install -r requirements.txt
 pip install .
-python main_widget.py
+python main.py
 ```
 - As of 02/28/2024 tensorflow-io does not have a working package for python 3.12
 - Tensorflow no longer support GPUs on Windows as of Version 2.10
