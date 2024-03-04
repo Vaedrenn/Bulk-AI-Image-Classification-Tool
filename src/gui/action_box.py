@@ -1,10 +1,13 @@
 import os
+from collections import OrderedDict
 
+import numpy as np
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
+
 
 from src.commands.predict_all import process_images_from_directory, predict
 from src.commands.exif_actions import write_tags
@@ -183,7 +186,7 @@ class actionbox(QWidget):
 
         # process images before predicting
         self.thread = QThread(self.main_widget)
-        self.worker = ImageWorker(self.model, directory, self.labels, self.char_labels, score_threshold, char_threshold)
+        self.worker = PredictWorker(self.model, directory, self.labels, self.char_labels, score_threshold, char_threshold)
 
         self.worker.moveToThread(self.thread)
 
@@ -312,7 +315,7 @@ class ImageWorker(QObject):
     def run(self):
         images = process_images_from_directory(self.model, self.directory)
         val = len(images)
-        self.max.emit(val*2)
+        self.max.emit(val * 2)
         self.progress.emit(val)
 
         for image in images:
@@ -323,4 +326,78 @@ class ImageWorker(QObject):
             self.progress.emit(1)
         if len(self.processed_images) > 0:
             self.results.emit(self.processed_images)
+        self.finished.emit()
+
+
+# Faster implementation of ImageWorker, uses significantly more computing power
+class PredictWorker(QObject):
+    finished = pyqtSignal()
+    cancelled = pyqtSignal()
+    max = pyqtSignal(int)
+    results = pyqtSignal(list)
+    progress = pyqtSignal(int)
+
+    def __init__(self, model, directory, labels, char_labels, score, char):
+        super().__init__()
+        self.model = model
+        self.directory = directory
+        self.labels = labels
+        self.char_labels = char_labels
+        self.score_threshold = score
+        self.char_threshold = char
+        self.processed_images = []
+
+    def run(self):
+        images = process_images_from_directory(self.model, self.directory)
+        val = len(images)
+        self.max.emit(val * 2)
+        self.progress.emit(val)
+
+        filenames, arrays = zip(*images)
+        arrays = np.array(arrays)
+
+        probs = self.model.predict(arrays, batch_size=10, use_multiprocessing=True)
+        probs = probs.astype(float)
+
+        # Match labels with predictions
+        for filename, probs in zip(filenames, probs):
+            # Extract the last three tags as ratings
+            rating_labels = ["rating:safe", "rating:questionable", "rating:explicit"]
+            rating_probs = probs[-3:]
+
+            probs = probs[:-3]
+            result_rating = OrderedDict(zip(rating_labels, rating_probs))
+
+            # Get the indices of labels sorted by probability in descending order
+            indices = np.argsort(probs)[::-1]
+
+            result_all = OrderedDict()
+            result_threshold = OrderedDict()
+            result_char = OrderedDict()
+
+            # Iterate over the sorted indices
+            for index in indices:
+                label = self.labels[index]
+                prob = probs[index]
+
+                # Store result for all labels
+                result_all[label] = prob
+
+                # If probability is below the threshold, stop adding to threshold results, cannot assume char > general
+                if prob < self.score_threshold and prob < self.char_threshold:
+                    break
+
+                # Store result for labels above the threshold
+                if prob > self.score_threshold and label not in self.char_labels:
+                    result_threshold[label] = prob
+                if prob > self.char_threshold and label in self.char_labels:
+                    result_char[label] = prob
+
+            result_text = ', '.join(result_all.keys())
+
+            if len(result_threshold) > 0 or len(result_char) > 0:
+                self.processed_images.append(
+                    (filename, (result_threshold, result_all, result_rating, result_char, result_text)))
+
+        self.results.emit(self.processed_images)
         self.finished.emit()
