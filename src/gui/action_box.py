@@ -62,8 +62,8 @@ class actionbox(QWidget):
         model_button = QPushButton("Browse")
         dir_button = QPushButton("Browse")
 
-        model_button.clicked.connect(lambda value: self.browse_model(self.model_input))
-        dir_button.clicked.connect(lambda value: self.browse_directory(self.dir_input))
+        model_button.clicked.connect(lambda: self.browse_model(self.model_input))
+        dir_button.clicked.connect(lambda: self.browse_directory(self.dir_input))
 
         selection_grid.addWidget(self.model_input, 0, 0)
         selection_grid.addWidget(model_button, 0, 1)
@@ -105,12 +105,12 @@ class actionbox(QWidget):
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(
-            lambda value: self.submit(self.dir_input.text(), general_threshold.value(), character_threshold.value()))
+            lambda : self.submit(self.dir_input.text(), general_threshold.value(), character_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
         selected_images_button = QPushButton("Tag Selected images")
-        one_image_button.clicked.connect(lambda value: self.tag_image())
-        selected_images_button.clicked.connect(lambda value: self.tag_selected_images())
+        one_image_button.clicked.connect(lambda : self.tag_image())
+        selected_images_button.clicked.connect(lambda : self.tag_selected_images())
 
         button_grid.addWidget(submit_button)
         button_grid.addWidget(one_image_button)
