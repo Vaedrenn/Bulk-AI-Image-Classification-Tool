@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import numpy as np
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QStringListModel
 from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
@@ -163,6 +163,7 @@ class actionbox(QWidget):
         self.model = model
         self.labels = labels
         self.char_labels = char_labels
+        self.main_widget.t_completer.setModel(QStringListModel(self.labels))  # update tag completer
 
     # Tags all images in the directory
     def submit(self, directory, general_threshold, char_threshold):
@@ -350,7 +351,7 @@ class PredictWorker(QObject):
     def run(self):
         images = process_images_from_directory(self.model, self.directory)
         val = len(images)
-        self.max.emit(val * 2)
+        self.max.emit(val * 3)
         self.progress.emit(val)
 
         filenames, arrays = zip(*images)
@@ -367,6 +368,7 @@ class PredictWorker(QObject):
 
         probs = self.model.predict(arrays, batch_size=10, use_multiprocessing=True)
         probs = probs.astype(float)
+        self.progress.emit(val)
 
         # Match labels with predictions
         for filename, probs in zip(filenames, probs):
@@ -403,7 +405,7 @@ class PredictWorker(QObject):
                     result_char[label] = prob
 
             result_text = ', '.join(result_all.keys())
-
+            self.progress.emit(val)
             if len(result_threshold) > 0 or len(result_char) > 0:
                 self.processed_images.append(
                     (filename, (result_threshold, result_all, result_rating, result_char, result_text)))

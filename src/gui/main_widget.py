@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
-    QTextEdit, QSizePolicy, QStyleFactory
+    QTextEdit, QSizePolicy, QStyleFactory, QCompleter, QLineEdit
 
 from src.gui.CheckListWidget import CheckListWidget
 from src.gui.TupleCheckListWidget import TupleCheckListWidget
@@ -24,6 +24,7 @@ class MainWidget(QWidget):
         self.model = None
         self.results = None
 
+        # QWigdets
         self.image_label = None
         self.text_output = None
         self.general_tags = None
@@ -33,6 +34,7 @@ class MainWidget(QWidget):
         self.image_label_widget = None
         self.action_box = None
         self.filelist = None
+        self.t_completer = None
 
         self.initUI()
 
@@ -107,6 +109,21 @@ class MainWidget(QWidget):
         self.rating_tags.setMaximumHeight(100)
         self.character_tags.setMaximumHeight(100)
 
+        tag_box = QWidget()
+        tag_box.setLayout(QHBoxLayout())
+        tag_box.layout().setContentsMargins(0, 0, 0, 10)
+
+        t_lineedit = QLineEdit()
+        t_lineedit.setPlaceholderText("Add a tag here")
+        t_button = QPushButton("Add Tag")
+
+        self.t_completer = QCompleter(self.labels)
+        t_lineedit.setCompleter(self.t_completer)
+        t_button.clicked.connect(self.add_tags)
+
+        tag_box.layout().addWidget(t_lineedit)
+        tag_box.layout().addWidget(t_button)
+
         button_box = QWidget()
         button_box.setLayout(QHBoxLayout())
         button_box.layout().setContentsMargins(0, 0, 0, 0)
@@ -147,6 +164,7 @@ class MainWidget(QWidget):
         frame3.layout().addWidget(self.character_tags)
         frame3.layout().addWidget(general_label)
         frame3.layout().addWidget(self.general_tags)
+        frame3.layout().addWidget(tag_box)
         frame3.layout().addWidget(button_box)
         # self.setStyleSheet("border: 1px solid black;")
 
@@ -222,6 +240,9 @@ class MainWidget(QWidget):
 
     def clear_all_files(self):
         self.filelist.uncheck_all()
+
+    def add_tags(self, text):
+        print("clicked")
 
     def select_all_tags(self):
         self.character_tags.check_all()
