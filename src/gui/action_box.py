@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
+import tensorflow as tf
 
 from src.commands.predict_all import process_images_from_directory, predict
 from src.commands.exif_actions import write_tags
@@ -297,7 +298,7 @@ class ModelWorker(QObject):
 # Worker Object for qthreading, predicts all
 class ImageWorker(QObject):
     finished = pyqtSignal()
-    cancelled = pyqtSignal()
+    cancelled = pyqtSignal(bool)
     max = pyqtSignal(int)
     results = pyqtSignal(list)
     progress = pyqtSignal(int)
@@ -332,7 +333,6 @@ class ImageWorker(QObject):
 # Faster implementation of ImageWorker, uses significantly more computing power
 class PredictWorker(QObject):
     finished = pyqtSignal()
-    cancelled = pyqtSignal()
     max = pyqtSignal(int)
     results = pyqtSignal(list)
     progress = pyqtSignal(int)
@@ -355,6 +355,15 @@ class PredictWorker(QObject):
 
         filenames, arrays = zip(*images)
         arrays = np.array(arrays)
+
+        # Stop TF from hogging all the VRAM, GPU not supported on windows
+        gpus = tf.config.experimental.list_physical_devices("GPU")
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+            except RuntimeError as e:
+                print(e)
 
         probs = self.model.predict(arrays, batch_size=10, use_multiprocessing=True)
         probs = probs.astype(float)
