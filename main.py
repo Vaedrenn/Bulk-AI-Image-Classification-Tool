@@ -8,6 +8,7 @@ from src.gui.main_widget import MainWidget
 def main():
     app = QApplication(sys.argv)
     myGUI = MainWidget()
+
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

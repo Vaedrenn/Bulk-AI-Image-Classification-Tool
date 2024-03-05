@@ -35,6 +35,7 @@ class MainWidget(QWidget):
         self.action_box = None
         self.filelist = None
         self.t_completer = None
+        self.t_lineedit = None
 
         self.initUI()
 
@@ -113,15 +114,15 @@ class MainWidget(QWidget):
         tag_box.setLayout(QHBoxLayout())
         tag_box.layout().setContentsMargins(0, 0, 0, 10)
 
-        t_lineedit = QLineEdit()
-        t_lineedit.setPlaceholderText("Add a tag here")
+        self.t_lineedit = QLineEdit()
+        self.t_lineedit.setPlaceholderText("Add a tag here")
         t_button = QPushButton("Add Tag")
 
         self.t_completer = QCompleter(self.labels)
-        t_lineedit.setCompleter(self.t_completer)
-        t_button.clicked.connect(self.add_tags)
+        self.t_lineedit.setCompleter(self.t_completer)
+        t_button.clicked.connect(lambda value: self.add_tags(self.t_lineedit.text()))
 
-        tag_box.layout().addWidget(t_lineedit)
+        tag_box.layout().addWidget(self.t_lineedit)
         tag_box.layout().addWidget(t_button)
 
         button_box = QWidget()
@@ -242,7 +243,27 @@ class MainWidget(QWidget):
         self.filelist.uncheck_all()
 
     def add_tags(self, text):
-        print("clicked")
+        if self.filelist.currentItem() is None:
+            return
+        current = self.filelist.currentItem()
+        if text in self.char_labels:
+            data = current.data(CHARACTER_RESULTS)
+            data[text] = 100  # 100 denotes custom user tag
+            current.setData(CHARACTER_RESULTS, data)
+            tag_state = current.data(TAG_STATE)
+            tag_state[text] = True
+            current.setData(TAG_STATE, tag_state)
+
+        else:
+            data = current.data(GENERAL_RESULTS)
+            data[text] = 100  # 100 denotes custom user tag
+            current.setData(GENERAL_RESULTS, data)
+            tag_state = current.data(TAG_STATE)
+            tag_state[text] = True
+            current.setData(TAG_STATE, tag_state)
+
+        self.update_tag_status()
+        self.update_page()
 
     def select_all_tags(self):
         self.character_tags.check_all()

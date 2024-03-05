@@ -27,11 +27,9 @@ class actionbox(QWidget):
         super().__init__(parent)
         self.dir_input = None
         self.model_input = None
-        self.model = None
-        self.char_labels = None
-        self.labels = None
-        self.images = []
         self.main_widget = main_widget
+
+        self.images = []
         self.initUI()
 
     def initUI(self):
@@ -160,17 +158,17 @@ class actionbox(QWidget):
     # utility function for loading models and tags
     def _load_results(self, results):
         model, labels, char_labels = results
-        self.model = model
-        self.labels = labels
-        self.char_labels = char_labels
-        self.main_widget.t_completer.setModel(QStringListModel(self.labels))  # update tag completer
+        self.main_widget.model = model
+        self.main_widget.labels = labels
+        self.main_widget.char_labels = char_labels
+        self.main_widget.t_completer.setModel(QStringListModel(self.main_widget.labels))  # update tag completer
 
     # Tags all images in the directory
     def submit(self, directory, general_threshold, char_threshold):
-        if self.model is None or directory is None or directory == '':
+        if self.main_widget.model is None or directory is None or directory == '':
             print("No model found")
             return
-        if self.labels is None or []:
+        if self.main_widget.labels is None or []:
             # Warn user that model correctly loaded but no labels are found
             QMessageBox.warning(self, "Warning", "Model loaded successfully but no labels are found.")
             return
@@ -188,7 +186,12 @@ class actionbox(QWidget):
 
         # process images before predicting
         self.thread = QThread(self.main_widget)
-        self.worker = PredictWorker(self.model, directory, self.labels, self.char_labels, score_threshold, char_threshold)
+        self.worker = PredictWorker(self.main_widget.model,
+                                    directory,
+                                    self.main_widget.labels,
+                                    self.main_widget.char_labels,
+                                    score_threshold,
+                                    char_threshold)
 
         self.worker.moveToThread(self.thread)
 
@@ -256,9 +259,9 @@ class actionbox(QWidget):
 
     # Tags just one image
     def tag_image(self):
-        if not self.model:
+        if not self.main_widget.model:
             return False
-        if not self.labels:
+        if not self.main_widget.labels:
             return False
 
         current_image = self.main_widget.filelist.currentItem()
@@ -268,9 +271,9 @@ class actionbox(QWidget):
 
     # Writes tags to exif for all selected images
     def tag_selected_images(self):
-        if not self.model:
+        if not self.main_widget.model:
             return False
-        if not self.labels:
+        if not self.main_widget.labels:
             return False
 
         selected_rows = self.main_widget.filelist.getCheckedRows()
