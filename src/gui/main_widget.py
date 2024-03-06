@@ -115,12 +115,14 @@ class MainWidget(QWidget):
         tag_box.layout().setContentsMargins(0, 0, 0, 10)
 
         self.t_lineedit = QLineEdit()
-        self.t_lineedit.setPlaceholderText("Add a tag here")
+        self.t_lineedit.setPlaceholderText("  Add a tag here and hit enter")
         t_button = QPushButton("Add Tag")
 
         self.t_completer = QCompleter(self.labels)
         self.t_lineedit.setCompleter(self.t_completer)
-        t_button.clicked.connect(lambda value: self.add_tags(self.t_lineedit.text()))
+        # self.t_completer.activated.connect(self.add_tags)
+        self.t_lineedit.returnPressed.connect(lambda: self.add_tags(self.t_lineedit.text()))
+        t_button.clicked.connect(lambda: self.add_tags(self.t_lineedit.text()))
 
         tag_box.layout().addWidget(self.t_lineedit)
         tag_box.layout().addWidget(t_button)
@@ -133,9 +135,9 @@ class MainWidget(QWidget):
         b_select_all = QPushButton("Select All")
         b_clear = QPushButton("Clear")
 
-        store_tags.clicked.connect(lambda value: self.update_tag_status())
-        b_select_all.clicked.connect(lambda value: self.select_all_tags())
-        b_clear.clicked.connect(lambda value: self.clear_tags())
+        store_tags.clicked.connect(lambda: self.update_tag_status())
+        b_select_all.clicked.connect(lambda: self.select_all_tags())
+        b_clear.clicked.connect(lambda: self.clear_tags())
 
         button_box.layout().addWidget(store_tags)
         button_box.layout().addWidget(b_select_all)
@@ -242,25 +244,23 @@ class MainWidget(QWidget):
     def clear_all_files(self):
         self.filelist.uncheck_all()
 
+    # Adds user tags to tag list, if the tag is found in the char labels add it there if not goes into general
     def add_tags(self, text):
         if self.filelist.currentItem() is None:
             return
         current = self.filelist.currentItem()
         if text in self.char_labels:
             data = current.data(CHARACTER_RESULTS)
-            data[text] = 100  # 100 denotes custom user tag
+            data[text] = 10  # 1000 denotes custom user tag
             current.setData(CHARACTER_RESULTS, data)
-            tag_state = current.data(TAG_STATE)
-            tag_state[text] = True
-            current.setData(TAG_STATE, tag_state)
 
         else:
             data = current.data(GENERAL_RESULTS)
-            data[text] = 100  # 100 denotes custom user tag
+            data[text] = 10  # 1000 denotes custom user tag
             current.setData(GENERAL_RESULTS, data)
-            tag_state = current.data(TAG_STATE)
-            tag_state[text] = True
-            current.setData(TAG_STATE, tag_state)
+        tag_state = current.data(TAG_STATE)
+        tag_state[text] = True
+        current.setData(TAG_STATE, tag_state)
 
         self.update_tag_status()
         self.update_page()
