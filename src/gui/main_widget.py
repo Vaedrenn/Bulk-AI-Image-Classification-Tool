@@ -43,6 +43,7 @@ class MainWidget(QWidget):
         QApplication.setStyle(QStyleFactory.create('Fusion'))
         dark_palette = create_dark_palette()
         self.setPalette(dark_palette)
+        self.setAutoFillBackground(True)
 
         # Create labels
         frame1 = QWidget()
@@ -171,10 +172,10 @@ class MainWidget(QWidget):
         frame3.layout().addWidget(button_box)
         # self.setStyleSheet("border: 1px solid black;")
 
-        # Set window properties
-        self.setGeometry(100, 100, 1200, 800)
-        self.setWindowTitle('Bulk AI Image Classification Tool')
-        self.show()
+        # # Set window properties
+        # self.setGeometry(100, 100, 1200, 800)
+        # self.setWindowTitle('Bulk AI Image Classification Tool')
+        # self.show()
 
     # Refreshes the contents of the page when a new image is selected
     def update_page(self):

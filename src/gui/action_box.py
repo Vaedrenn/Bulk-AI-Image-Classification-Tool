@@ -369,7 +369,7 @@ class PredictWorker(QObject):
             except RuntimeError as e:
                 print(e)
 
-        probs = self.model.predict(arrays, batch_size=10, use_multiprocessing=True)
+        probs = self.model.predict(arrays, batch_size=20, use_multiprocessing=True)
         probs = probs.astype(float)
         self.progress.emit(val)
 

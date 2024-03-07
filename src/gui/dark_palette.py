@@ -17,4 +17,6 @@ def create_dark_palette():
     dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
     dark_palette.setColor(QPalette.HighlightedText, QColor(250, 250, 250))
 
+    dark_palette.setColor(QPalette.Background, QColor(45, 45, 45))
+
     return dark_palette
