@@ -123,6 +123,7 @@ class FileManager(QWidget):
 
     def load_images(self):
         model = self.tagger.results  # get the model in tagger
+        self.item_menu.clear()
         for row in range(model.rowCount()):
             index = model.index(row, 0)  # Create index for each row and column 0
             img_path = model.data(index, Qt.UserRole)  # Get the data associated with the index
