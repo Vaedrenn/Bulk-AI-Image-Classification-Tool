@@ -227,7 +227,7 @@ class actionbox(QWidget):
             file_path = image[0]
             threshold_results, _, rating_results, char_results, text = image[1]
             filename = os.path.basename(file_path)
-            pixmap = QPixmap(file_path).scaledToWidth(200, Qt.FastTransformation)
+            pixmap = QPixmap(file_path).scaledToHeight(200, Qt.FastTransformation)
             icon = QIcon(pixmap)
             item = QListWidgetItem(icon, filename)
             item.setData(FILE_PATH, file_path)

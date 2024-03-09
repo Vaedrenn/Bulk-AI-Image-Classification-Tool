@@ -89,7 +89,7 @@ class FileManager(QWidget):
         self.item_menu.setViewMode(QListWidget.IconMode)
         self.item_menu.setAcceptDrops(False)
         self.item_menu.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
-        self.item_menu.setIconSize(QSize(200, 200))
+        self.item_menu.setIconSize(QSize(400, 200))
         self.item_menu.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
 
         self.action_box = QWidget()
@@ -163,3 +163,4 @@ class ItemDelegate(QStyledItemDelegate):
         super().initStyleOption(option, index)
         if not self.displayRoleEnabled:
             option.features &= ~option.HasDisplay
+            option.features &= ~option.HasCheckIndicator

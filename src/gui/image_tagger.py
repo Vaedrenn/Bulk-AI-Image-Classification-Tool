@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtCore import Qt, QEvent, QSize
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QTextEdit, QSizePolicy, QStyleFactory, QCompleter, QLineEdit
@@ -66,6 +66,7 @@ class ImageTagger(QWidget):
 
         # Frame 1
         self.filelist = CheckListWidget()
+        self.filelist.setIconSize(QSize(0, 0))
         select_all = QPushButton("Select All")
         deselect_all = QPushButton("Deselect All")
         self.filelist.itemClicked.connect(self.update_page)  # on click change image
