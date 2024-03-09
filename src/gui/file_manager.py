@@ -1,9 +1,7 @@
-import sys
-
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
-    QCompleter, QListWidget, QListWidgetItem, QLabel
+    QCompleter, QListWidget, QLabel, QAbstractItemView, QListView, QStyledItemDelegate
 
 from src.gui.CheckListWidget import CheckListWidget
 from src.gui.dark_palette import create_dark_palette
@@ -24,6 +22,8 @@ class FileManager(QWidget):
         self.item_menu = None
         self.action_box = None
         self.filelist = None
+
+        self.images = []
 
         self.initUI()
 
@@ -52,6 +52,7 @@ class FileManager(QWidget):
         # frame3.setLayout(QVBoxLayout())
 
         # Frame 1
+        frame1.setMaximumWidth(400)
         search_box = QWidget()
         search_box.setLayout(QHBoxLayout())
         search_box.layout().setContentsMargins(0, 0, 0, 0)
@@ -62,8 +63,8 @@ class FileManager(QWidget):
 
         self.s_completer = QCompleter(self.tagger.labels)
         self.s_lineedit.setCompleter(self.s_completer)
-        self.s_lineedit.returnPressed.connect(lambda: self.add_tags(self.s_lineedit.text()))
-        t_button.clicked.connect(lambda: self.add_tags(self.s_lineedit.text()))
+        # self.s_lineedit.returnPressed.connect(lambda: self.add_tags(self.s_lineedit.text()))
+        # t_button.clicked.connect(lambda: self.add_tags(self.s_lineedit.text()))
 
         search_box.layout().addWidget(self.s_lineedit)
         search_box.layout().addWidget(t_button)
@@ -79,10 +80,17 @@ class FileManager(QWidget):
         frame1.layout().addWidget(deselect_all)
 
         # Frame 2
-        self.item_menu = QListWidget()
+        self.proxy_model = QSortFilterProxyModel()
+
+        self.item_menu = QListView()
+        delegate = ItemDelegate()
+        self.item_menu.setItemDelegate(delegate)
+        self.item_menu.setModel(self.proxy_model)
         self.item_menu.setViewMode(QListWidget.IconMode)
-        self.item_menu.setIconSize(QSize(200,200))
-        self.item_menu.setBatchSize(50)
+        self.item_menu.setAcceptDrops(False)
+        self.item_menu.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
+        self.item_menu.setIconSize(QSize(200, 200))
+        self.item_menu.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
 
         self.action_box = QWidget()
         self.action_box.setLayout(QVBoxLayout())
@@ -105,12 +113,6 @@ class FileManager(QWidget):
             val = '(' + str(sorted_dict[i]) + ')   ' + str(i)
             self.tag_list.addItem(val)
 
-        # load "thumbnails"
-        # for i in range(list_widget.count()):
-        #     item = list_widget.item(i)
-        #     if item is not None:  # Ensure the item is not None
-        #         list_item = QListWidgetItem(item.data(FILE_PATH))
-        #         self.item_menu.addItem(list_item)
         self.load_images()
 
         return
@@ -121,18 +123,17 @@ class FileManager(QWidget):
     def clear_all_files(self):
         self.tag_list.uncheck_all()
 
+    # Creates thumbnails for the item_menu
     def load_images(self):
-        model = self.tagger.results  # get the model in tagger
-        self.item_menu.clear()
-        for row in range(model.rowCount()):
-            index = model.index(row, 0)  # Create index for each row and column 0
-            img_path = model.data(index, Qt.UserRole)  # Get the data associated with the index
-
-            pixmap = QPixmap(img_path).scaledToWidth(200, Qt.FastTransformation)
-            icon = QIcon(pixmap)
-
-            item = QListWidgetItem(icon, "")
-            self.item_menu.addItem(item)
+        self.proxy_model.setSourceModel(self.tagger.results)
+        # model = self.tagger.results  # get the model in tagger
+        #
+        # for row in range(model.rowCount()):
+        #     index = model.index(row, 0)  # Create index for each row, QlistWidget has no columns
+        #     icon = model.data(index, ICON)  # Get the data associated with the index
+        #
+        #     item = QListWidgetItem(icon, "")
+        #     self.item_menu.addItem(item)
 
     def filter_images(self):
         selected_tags = [
@@ -151,3 +152,14 @@ class FileManager(QWidget):
                     label = QLabel()
                     label.setPixmap(pixmap.scaledToWidth(200))
                     self.thumbnail_layout.addWidget(label)
+
+
+class ItemDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.displayRoleEnabled = False
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        if not self.displayRoleEnabled:
+            option.features &= ~option.HasDisplay

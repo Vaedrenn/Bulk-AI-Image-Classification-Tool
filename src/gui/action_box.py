@@ -4,6 +4,7 @@ from collections import OrderedDict
 import numpy as np
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QStringListModel
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
@@ -20,7 +21,6 @@ CHARACTER_RESULTS = Qt.UserRole + 2
 GENERAL_RESULTS = Qt.UserRole + 3
 TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
-
 
 class actionbox(QWidget):
     def __init__(self, main_widget, parent):
@@ -227,7 +227,9 @@ class actionbox(QWidget):
             file_path = image[0]
             threshold_results, _, rating_results, char_results, text = image[1]
             filename = os.path.basename(file_path)
-            item = QListWidgetItem(filename)
+            pixmap = QPixmap(file_path).scaledToWidth(200, Qt.FastTransformation)
+            icon = QIcon(pixmap)
+            item = QListWidgetItem(icon, filename)
             item.setData(FILE_PATH, file_path)
             item.setData(GENERAL_RESULTS, threshold_results)
             item.setData(CHARACTER_RESULTS, char_results)
@@ -252,7 +254,6 @@ class actionbox(QWidget):
                 tag_state[key] = True
 
             item.setData(TAG_STATE, tag_state)
-
             self.main_widget.filelist.addItem(item)
         self.main_widget.results = self.main_widget.filelist.model()  # set a pointer to listwidget's model
         self.main_widget.tag_count = count
