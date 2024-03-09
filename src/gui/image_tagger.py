@@ -16,13 +16,14 @@ TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
 
 
-class MainWidget(QWidget):
+class ImageTagger(QWidget):
     def __init__(self):
         super().__init__()
         self.labels = []
         self.char_labels = []
         self.model = None
         self.results = None
+        self.tag_count = {}
 
         # QWigdets
         self.image_label = None

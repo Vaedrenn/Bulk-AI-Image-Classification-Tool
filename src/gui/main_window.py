@@ -1,11 +1,12 @@
 import sys
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget
+
 
 from src.gui.dark_palette import create_dark_palette
-from src.gui.main_widget import MainWidget
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QLabel, QAction
-
+from src.gui.image_tagger import ImageTagger
+from src.gui.file_manager import FileManager
 
 FILE_PATH = Qt.UserRole
 RATING = Qt.UserRole + 1
@@ -25,8 +26,8 @@ class MyWindow(QMainWindow):
         self.setPalette(create_dark_palette())
         self.tab_widget.setPalette(create_dark_palette())
         # Create tabs (widgets)
-        self.tab1 = MainWidget()
-        self.tab2 = QWidget()
+        self.tab1 = ImageTagger()
+        self.tab2 = FileManager(self.tab1)
 
         # Add tabs to the QTabWidget
         self.tab_widget.addTab(self.tab1, "Main")
@@ -41,4 +42,13 @@ if __name__ == "__main__":
     window.setGeometry(100, 100, 1200, 800)
     window.setWindowTitle("Bulk AI Image Classification Tool")
     window.show()
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
+    directory = r"tests/images"
+    from src.commands import load_actions
+    window.tab1.model = load_actions.load_model(directory_path)
+    window.tab1.labels = load_actions.load_labels(directory_path)
+    window.tab1.char_labels = load_actions.load_char_labels(directory_path)
+    while window.tab1.model is None:
+        pass
+    window.tab1.action_box.submit(directory, 50, 85)
     sys.exit(app.exec_())

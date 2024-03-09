@@ -216,7 +216,8 @@ class actionbox(QWidget):
         self.pd.setValue(self.pd.value() + val)
 
     # process results and refresh the page
-    def process_results(self, results):
+    def process_results(self, result_count):
+        results, count = result_count
         if len(results) == 0 or None:
             QMessageBox.information(self, "No results", "No results within threshold")
 
@@ -254,6 +255,7 @@ class actionbox(QWidget):
 
             self.main_widget.filelist.addItem(item)
         self.main_widget.results = self.main_widget.filelist.model()  # set a pointer to listwidget's model
+        self.main_widget.tag_count = count
         self.main_widget.filelist.setCurrentRow(0)
         self.main_widget.update_page()
 
@@ -338,7 +340,7 @@ class ImageWorker(QObject):
 class PredictWorker(QObject):
     finished = pyqtSignal()
     max = pyqtSignal(int)
-    results = pyqtSignal(list)
+    results = pyqtSignal(tuple)
     progress = pyqtSignal(int)
 
     def __init__(self, model, directory, labels, char_labels, score, char):
@@ -372,7 +374,7 @@ class PredictWorker(QObject):
         probs = self.model.predict(arrays, batch_size=20, use_multiprocessing=True)
         probs = probs.astype(float)
         self.progress.emit(val)
-
+        tag_count = {}
         # Match labels with predictions
         for filename, probs in zip(filenames, probs):
             # Extract the last three tags as ratings
@@ -396,6 +398,7 @@ class PredictWorker(QObject):
 
                 # Store result for all labels
                 result_all[label] = prob
+                tag_count[label] = tag_count.get(label, 0) + 1
 
                 # If probability is below the threshold, stop adding to threshold results, cannot assume char > general
                 if prob < self.score_threshold and prob < self.char_threshold:
@@ -413,5 +416,5 @@ class PredictWorker(QObject):
                 self.processed_images.append(
                     (filename, (result_threshold, result_all, result_rating, result_char, result_text)))
 
-        self.results.emit(self.processed_images)
+        self.results.emit((self.processed_images, tag_count))
         self.finished.emit()
