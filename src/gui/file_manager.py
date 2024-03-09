@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel
+from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
     QCompleter, QListWidget, QLabel, QAbstractItemView, QListView, QStyledItemDelegate
@@ -18,6 +18,9 @@ class FileManager(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self.tagger = parent
+        self.s_lineedit = QLineEdit()
+        self.tag_list = CheckListWidget()
+        self.proxy_model = QSortFilterProxyModel()
 
         self.item_menu = None
         self.action_box = None
@@ -36,20 +39,17 @@ class FileManager(QWidget):
         # Create labels
         frame1 = QWidget()
         frame2 = QWidget()
-        # frame3 = QWidget()
 
         # Create layout
         main_layout = QHBoxLayout()
 
         main_layout.addWidget(frame1)
         main_layout.addWidget(frame2)
-        # main_layout.addWidget(frame3)
 
         # Set main window layout
         self.setLayout(main_layout)
         frame1.setLayout(QVBoxLayout())
         frame2.setLayout(QVBoxLayout())
-        # frame3.setLayout(QVBoxLayout())
 
         # Frame 1
         frame1.setMaximumWidth(400)
@@ -57,7 +57,6 @@ class FileManager(QWidget):
         search_box.setLayout(QHBoxLayout())
         search_box.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.s_lineedit = QLineEdit()
         self.s_lineedit.setPlaceholderText("  Search Tags")
         t_button = QPushButton("Search")
 
@@ -69,9 +68,8 @@ class FileManager(QWidget):
         search_box.layout().addWidget(self.s_lineedit)
         search_box.layout().addWidget(t_button)
 
-        self.tag_list = CheckListWidget()
         deselect_all = QPushButton("Deselect All")
-        self.tag_list.itemClicked.connect(self.update_page)  # on click filter
+        self.tag_list.itemClicked.connect(self.filter_images)  # on click filter
 
         deselect_all.clicked.connect(self.clear_all_files)
 
@@ -80,7 +78,6 @@ class FileManager(QWidget):
         frame1.layout().addWidget(deselect_all)
 
         # Frame 2
-        self.proxy_model = QSortFilterProxyModel()
 
         self.item_menu = QListView()
         delegate = ItemDelegate()
@@ -126,32 +123,24 @@ class FileManager(QWidget):
     # Creates thumbnails for the item_menu
     def load_images(self):
         self.proxy_model.setSourceModel(self.tagger.results)
-        # model = self.tagger.results  # get the model in tagger
-        #
-        # for row in range(model.rowCount()):
-        #     index = model.index(row, 0)  # Create index for each row, QlistWidget has no columns
-        #     icon = model.data(index, ICON)  # Get the data associated with the index
-        #
-        #     item = QListWidgetItem(icon, "")
-        #     self.item_menu.addItem(item)
 
+    def filter_tags(self, text):
+        pass
+
+    # Display images with the following tags.
     def filter_images(self):
+        # get all tags and remove (number)
         selected_tags = [
             item.text().split("   ", 1)[1].strip()
             for item in self.tag_list.selectedItems()
         ]
+        regex_pattern = "(?=.*{})".format(")(?=.*".join(selected_tags))   # Regex for selecting things with all tags
 
-        if not selected_tags:
-            self.scroll_widget.show()
-        else:
-            for i in reversed(range(self.thumbnail_layout.count())):
-                self.thumbnail_layout.itemAt(i).widget().setParent(None)
-            for img_info in self.images:
-                if all(tag in img_info["tags"] for tag in selected_tags):
-                    pixmap = QPixmap(img_info["path"])
-                    label = QLabel()
-                    label.setPixmap(pixmap.scaledToWidth(200))
-                    self.thumbnail_layout.addWidget(label)
+        # Create QRegularExpression object
+        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
+
+        self.proxy_model.setFilterRole(TEXT)
+        self.proxy_model.setFilterRegularExpression(regex)
 
 
 class ItemDelegate(QStyledItemDelegate):
