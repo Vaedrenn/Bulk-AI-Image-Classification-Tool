@@ -18,9 +18,11 @@ class FileManager(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self.tagger = parent
-        self.s_lineedit = QLineEdit()
-        self.tag_list = CheckListWidget()
+
+        self.searchbar = QLineEdit()
+        self.tag_list = QListWidget()
         self.proxy_model = QSortFilterProxyModel()
+        self.search_completer = QCompleter(self.tagger.labels)
 
         self.item_menu = None
         self.action_box = None
@@ -57,21 +59,21 @@ class FileManager(QWidget):
         search_box.setLayout(QHBoxLayout())
         search_box.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.s_lineedit.setPlaceholderText("  Search Tags")
-        t_button = QPushButton("Search")
+        self.searchbar.setPlaceholderText("  Search Tags")
+        tag_button = QPushButton("Search")
+        self.searchbar.setCompleter(self.search_completer)
 
-        self.s_completer = QCompleter(self.tagger.labels)
-        self.s_lineedit.setCompleter(self.s_completer)
-        # self.s_lineedit.returnPressed.connect(lambda: self.add_tags(self.s_lineedit.text()))
-        # t_button.clicked.connect(lambda: self.add_tags(self.s_lineedit.text()))
+        search_box.layout().addWidget(self.searchbar)
+        search_box.layout().addWidget(tag_button)
 
-        search_box.layout().addWidget(self.s_lineedit)
-        search_box.layout().addWidget(t_button)
+        self.tag_list.setSelectionMode(QListWidget.MultiSelection)
+        self.tag_list.itemClicked.connect(self.filter_images)  # on click filter
+        self.tag_list.setAcceptDrops(False)
+        tl_delegate = TagListItemDelegate()
+        self.tag_list.setItemDelegate(tl_delegate)
 
         deselect_all = QPushButton("Deselect All")
-        self.tag_list.itemClicked.connect(self.filter_images)  # on click filter
-
-        deselect_all.clicked.connect(self.clear_all_files)
+        deselect_all.clicked.connect(self.tag_list.clearSelection)
 
         frame1.layout().addWidget(search_box)
         frame1.layout().addWidget(self.tag_list)
@@ -80,7 +82,7 @@ class FileManager(QWidget):
         # Frame 2
 
         self.item_menu = QListView()
-        delegate = ItemDelegate()
+        delegate = ThumbnailDelegate()
         self.item_menu.setItemDelegate(delegate)
         self.item_menu.setModel(self.proxy_model)
         self.item_menu.setViewMode(QListWidget.IconMode)
@@ -114,13 +116,7 @@ class FileManager(QWidget):
 
         return
 
-    def update_page(self):
-        pass
-
-    def clear_all_files(self):
-        self.tag_list.uncheck_all()
-
-    # Creates thumbnails for the item_menu
+    # Reloads changes from tagger, loads images and tags.
     def load_images(self):
         self.proxy_model.setSourceModel(self.tagger.results)
 
@@ -134,7 +130,7 @@ class FileManager(QWidget):
             item.text().split("   ", 1)[1].strip()
             for item in self.tag_list.selectedItems()
         ]
-        regex_pattern = "(?=.*{})".format(")(?=.*".join(selected_tags))   # Regex for selecting things with all tags
+        regex_pattern = "(?=.*{})".format(")(?=.*".join(selected_tags))  # Regex for selecting things with all tags
 
         # Create QRegularExpression object
         regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
@@ -143,7 +139,7 @@ class FileManager(QWidget):
         self.proxy_model.setFilterRegularExpression(regex)
 
 
-class ItemDelegate(QStyledItemDelegate):
+class ThumbnailDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.displayRoleEnabled = False
@@ -153,3 +149,14 @@ class ItemDelegate(QStyledItemDelegate):
         if not self.displayRoleEnabled:
             option.features &= ~option.HasDisplay
             option.features &= ~option.HasCheckIndicator
+
+
+class TagListItemDelegate(QStyledItemDelegate):
+    def sizeHint(self, option, index):
+        # Customize the size of items
+        return QSize(100, 25)  # Adjust the width and height as needed
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        # Customize the font size of the item text
+        option.font.setPointSize(12)  # Adjust the font size as needed
