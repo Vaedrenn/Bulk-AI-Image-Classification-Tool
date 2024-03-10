@@ -107,9 +107,17 @@ class FileManager(QWidget):
         # populate tag list
         self.tag_list.clear()
         tag_count = self.tagger.tag_count
-        sorted_dict = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
-        for i in sorted_dict:
-            val = '(' + str(sorted_dict[i]) + ')   ' + str(i)
+
+        excluded_items = {"rating:safe": 0, "rating:questionable": 0, "rating:explicit": 0}
+        for i in excluded_items:
+            if i in tag_count.keys():
+                count = tag_count.pop(i)
+                val = '(' + str(count) + ')   ' + str(i)
+                self.tag_list.addItem(val)
+
+        sorted_items = sorted(tag_count.items(), key=lambda item: item[1], reverse=True)
+        for key, value in sorted_items:
+            val = '(' + str(value) + ')   ' + str(key)
             self.tag_list.addItem(val)
 
         self.load_images()
