@@ -66,7 +66,7 @@ class FileManager(QWidget):
         search_box.layout().addWidget(self.searchbar)
         search_box.layout().addWidget(tag_button)
 
-        self.tag_list.setSelectionMode(QListWidget.MultiSelection)
+        self.tag_list.setSelectionMode(QListWidget.MultiSelection)  # Toggle style selection
         self.tag_list.itemClicked.connect(self.filter_images)  # on click filter
         self.tag_list.setAcceptDrops(False)
         tl_delegate = TagListItemDelegate()

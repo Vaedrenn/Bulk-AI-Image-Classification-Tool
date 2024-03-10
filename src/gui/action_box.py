@@ -381,14 +381,17 @@ class PredictWorker(QObject):
             # Extract the last three tags as ratings
             rating_labels = ["rating:safe", "rating:questionable", "rating:explicit"]
             rating_probs = probs[-3:]
-
             probs = probs[:-3]
+            # get the highest rating
             result_rating = OrderedDict(zip(rating_labels, rating_probs))
+            max_index = max(result_rating, key=result_rating.get)
+            tag_count[max_index] = tag_count.get(max_index, 0) + 1
 
             # Get the indices of labels sorted by probability in descending order
             indices = np.argsort(probs)[::-1]
 
             result_all = OrderedDict()
+            result_all[max_index] = result_rating[max_index]
             result_threshold = OrderedDict()
             result_char = OrderedDict()
 
