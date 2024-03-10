@@ -22,7 +22,7 @@ class FileManager(QWidget):
         self.searchbar = QLineEdit()
         self.tag_list = QListWidget()
         self.proxy_model = QSortFilterProxyModel()
-        self.search_completer = QCompleter(self.tagger.labels)
+        self.search_completer = QCompleter()
 
         self.item_menu = None
         self.action_box = None
@@ -61,8 +61,6 @@ class FileManager(QWidget):
 
         self.searchbar.setPlaceholderText("  Search Tags")
         tag_button = QPushButton("Search")
-        self.searchbar.setCompleter(self.search_completer)
-
         search_box.layout().addWidget(self.searchbar)
         search_box.layout().addWidget(tag_button)
 
@@ -120,15 +118,18 @@ class FileManager(QWidget):
             val = '(' + str(value) + ')   ' + str(key)
             self.tag_list.addItem(val)
 
-        self.load_images()
+        self.load_tagger_info()
 
         return
 
     # Reloads changes from tagger, loads images and tags.
-    def load_images(self):
+    def load_tagger_info(self):
         self.proxy_model.setSourceModel(self.tagger.results)
+        self.search_completer = QCompleter(self.tagger.labels)
+        self.searchbar.setCompleter(self.search_completer)
 
-    def filter_tags(self, text):
+    def search_tags(self, text):
+
         pass
 
     # Display images with the following tags.
