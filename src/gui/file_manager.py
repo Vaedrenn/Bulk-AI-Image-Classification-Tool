@@ -1,9 +1,7 @@
 from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression
-from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
-    QCompleter, QListWidget, QLabel, QAbstractItemView, QListView, QStyledItemDelegate
+    QCompleter, QListWidget, QAbstractItemView, QListView, QStyledItemDelegate
 
-from src.gui.CheckListWidget import CheckListWidget
 from src.gui.dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
@@ -22,13 +20,11 @@ class FileManager(QWidget):
         self.searchbar = QLineEdit()
         self.tag_list = QListWidget()
         self.proxy_model = QSortFilterProxyModel()
-        self.search_completer = QCompleter()
+        self.search_completer = MultiCompleter()
 
-        self.item_menu = None
+        self.image_gallery = None
         self.action_box = None
         self.filelist = None
-
-        self.images = []
 
         self.initUI()
 
@@ -38,13 +34,12 @@ class FileManager(QWidget):
         self.setPalette(dark_palette)
         self.setAutoFillBackground(True)
 
-        # Create labels
+        # Create Widgets
         frame1 = QWidget()
         frame2 = QWidget()
 
         # Create layout
         main_layout = QHBoxLayout()
-
         main_layout.addWidget(frame1)
         main_layout.addWidget(frame2)
 
@@ -53,7 +48,7 @@ class FileManager(QWidget):
         frame1.setLayout(QVBoxLayout())
         frame2.setLayout(QVBoxLayout())
 
-        # Frame 1
+        # Frame 1, Tag list and search
         frame1.setMaximumWidth(400)
         search_box = QWidget()
         search_box.setLayout(QHBoxLayout())
@@ -78,23 +73,22 @@ class FileManager(QWidget):
         frame1.layout().addWidget(deselect_all)
 
         # Frame 2
-
-        self.item_menu = QListView()
+        self.image_gallery = QListView()
         delegate = ThumbnailDelegate()
-        self.item_menu.setItemDelegate(delegate)
-        self.item_menu.setModel(self.proxy_model)
-        self.item_menu.setViewMode(QListWidget.IconMode)
-        self.item_menu.setAcceptDrops(False)
-        self.item_menu.setSelectionMode(QAbstractItemView.ExtendedSelection)  # Allows ctrl and  shift click selection
-        self.item_menu.setIconSize(QSize(400, 200))
-        self.item_menu.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
+        self.image_gallery.setItemDelegate(delegate)
+        self.image_gallery.setModel(self.proxy_model)  # set proxy model for filtering
+        self.image_gallery.setViewMode(QListWidget.IconMode)
+        self.image_gallery.setAcceptDrops(False)
+        self.image_gallery.setSelectionMode(QAbstractItemView.ExtendedSelection)  # ctrl and shift click selection
+        self.image_gallery.setIconSize(QSize(400, 200))
+        self.image_gallery.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
 
         self.action_box = QWidget()
         self.action_box.setLayout(QVBoxLayout())
         update_btn = QPushButton("Import From Tagger")
         update_btn.clicked.connect(self.get_results)
         self.action_box.layout().addWidget(update_btn)
-        frame2.layout().addWidget(self.item_menu)
+        frame2.layout().addWidget(self.image_gallery)
         frame2.layout().addWidget(self.action_box)
 
     # used to populate file manager
@@ -102,30 +96,33 @@ class FileManager(QWidget):
         list_widget = self.tagger.filelist
         if list_widget.count() == 0:
             return
-        # populate tag list
+
+        # Populate tag list
         self.tag_list.clear()
         tag_count = self.tagger.tag_count
 
+        # Items to exclude
         excluded_items = {"rating:safe": 0, "rating:questionable": 0, "rating:explicit": 0}
-        for i in excluded_items:
-            if i in tag_count.keys():
-                count = tag_count.pop(i)
-                val = '(' + str(count) + ')   ' + str(i)
-                self.tag_list.addItem(val)
 
-        sorted_items = sorted(tag_count.items(), key=lambda item: item[1], reverse=True)
-        for key, value in sorted_items:
-            val = '(' + str(value) + ')   ' + str(key)
+        # Sort and add excluded items
+        for key, value in sorted(excluded_items.items(), key=lambda item: item[1], reverse=True):
+            count = tag_count.pop(key)
+            val = f"({count})   {key}"
             self.tag_list.addItem(val)
 
-        self.load_tagger_info()
+        # Sort and add remaining items
+        for key, value in sorted(tag_count.items(), key=lambda item: item[1], reverse=True):
+            val = f"({value})   {key}"
+            self.tag_list.addItem(val)
 
-        return
+        # Update tag_count with excluded items
+        tag_count.update(excluded_items)
+        self.load_tagger_info()
 
     # Reloads changes from tagger, loads images and tags.
     def load_tagger_info(self):
         self.proxy_model.setSourceModel(self.tagger.results)
-        self.search_completer = QCompleter(self.tagger.labels)
+        self.search_completer = MultiCompleter(self.tagger.tag_count.keys())
         self.searchbar.setCompleter(self.search_completer)
 
     def search_tags(self, text):
@@ -144,10 +141,29 @@ class FileManager(QWidget):
         # Create QRegularExpression object
         regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
 
-        self.proxy_model.setFilterRole(TEXT)
-        self.proxy_model.setFilterRegularExpression(regex)
+        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
+        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
 
 
+class MultiCompleter(QCompleter):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMaxVisibleItems(5)
+
+    def pathFromIndex(self, index):
+        path = super().pathFromIndex(index)
+
+        lst = str(self.widget().text()).split(', ')
+        if len(lst) > 1:
+            path = ', '.join(lst[:-1]) + ', ' + path
+
+        return path
+
+    def splitPath(self, path):
+        return [path.split(',')[-1].strip()]
+
+
+# Custom delegate for displaying images, removes check box and names for better formatting
 class ThumbnailDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -155,11 +171,13 @@ class ThumbnailDelegate(QStyledItemDelegate):
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
+        # remove checkbox and name area
         if not self.displayRoleEnabled:
             option.features &= ~option.HasDisplay
             option.features &= ~option.HasCheckIndicator
 
 
+# Custom delegate for displaying larger item with larger text
 class TagListItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         # Customize the size of items
