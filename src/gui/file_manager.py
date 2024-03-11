@@ -55,9 +55,11 @@ class FileManager(QWidget):
         search_box.layout().setContentsMargins(0, 0, 0, 0)
 
         self.searchbar.setPlaceholderText("  Search Tags")
+        self.searchbar.returnPressed.connect(lambda: self.search_tags(self.searchbar.text()))
         tag_button = QPushButton("Search")
         search_box.layout().addWidget(self.searchbar)
         search_box.layout().addWidget(tag_button)
+        tag_button.clicked.connect(lambda: self.search_tags(self.searchbar.text()))
 
         self.tag_list.setSelectionMode(QListWidget.MultiSelection)  # Toggle style selection
         self.tag_list.itemClicked.connect(self.filter_images)  # on click filter
@@ -125,9 +127,16 @@ class FileManager(QWidget):
         self.search_completer = MultiCompleter(self.tagger.tag_count.keys())
         self.searchbar.setCompleter(self.search_completer)
 
-    def search_tags(self, text):
+    def search_tags(self, text: str):
+        if text == "":
+            return
+        tags = [tag.strip() for tag in text.split(',')]
+        regex_pattern = "(?=.*{})".format(")(?=.*".join(tags))  # Regex for selecting things with all tags
+        # Create QRegularExpression object
+        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
 
-        pass
+        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
+        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
 
     # Display images with the following tags.
     def filter_images(self):
