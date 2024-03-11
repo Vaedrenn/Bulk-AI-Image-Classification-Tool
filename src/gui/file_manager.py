@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
-    QCompleter, QListWidget, QAbstractItemView, QListView, QStyledItemDelegate
+    QCompleter, QListWidget, QAbstractItemView, QListView, QStyledItemDelegate, QTextEdit, QGridLayout, QFileDialog, \
+    QGroupBox
 
 from src.gui.dark_palette import create_dark_palette
 
@@ -21,6 +22,10 @@ class FileManager(QWidget):
         self.tag_list = QListWidget()
         self.proxy_model = QSortFilterProxyModel()
         self.search_completer = MultiCompleter()
+
+        self.file_name = QLineEdit()
+        self.file_tags = QTextEdit()
+        self.info_widget = QGroupBox()
 
         self.image_gallery = None
         self.action_box = None
@@ -85,13 +90,104 @@ class FileManager(QWidget):
         self.image_gallery.setIconSize(QSize(400, 200))
         self.image_gallery.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
 
-        self.action_box = QWidget()
-        self.action_box.setLayout(QVBoxLayout())
+        # Action Box
+        self.action_box = QGroupBox()
+        self.action_box.setLayout(QHBoxLayout())
+        self.action_box.setMaximumHeight(300)
+        self.action_box.setContentsMargins(0,0,0,0)
+
+        # info_widget: This is where file information will go
+        self.info_widget.setLayout(QVBoxLayout())
+        self.file_name.setPlaceholderText("File Name")
+        self.file_name.setReadOnly(True)
+        self.file_tags.setPlaceholderText("Tags")
+        self.file_tags.setReadOnly(True)
+        self.info_widget.layout().addWidget(self.file_name)
+        self.info_widget.layout().addWidget(self.file_tags)
+
+        self.fms_widget = QGroupBox()
+        self.fms_widget.setLayout(QGridLayout())
+
+        self.search_wigdet = QGroupBox()
+        self.search_wigdet.setLayout(QHBoxLayout())
+        self.target_dir = QLineEdit()
+        self.browse_btn = QPushButton("Browse")
+        self.browse_btn.clicked.connect(lambda: self.browse_directory(self.target_dir))
+        self.search_wigdet.layout().addWidget(self.target_dir)
+        self.search_wigdet.layout().addWidget(self.browse_btn)
+
+        self.button_box = QGroupBox()
+        self.button_box.setLayout(QHBoxLayout())
+        self.move_btn = QPushButton("Move Selected")
+        self.slt_all = QPushButton("Select All")
+        self.clr_all = QPushButton("Clear Selected")
+        self.move_btn.clicked.connect(lambda: self.move_selected(self.image_gallery.selectedIndexes()))
+        self.slt_all.clicked.connect(lambda: self.image_gallery.selectAll())
+        self.clr_all.clicked.connect(lambda: self.image_gallery.clearSelection())
         update_btn = QPushButton("Import From Tagger")
         update_btn.clicked.connect(self.get_results)
-        self.action_box.layout().addWidget(update_btn)
+        self.button_box.layout().addWidget(self.move_btn)
+        self.button_box.layout().addWidget(self.slt_all)
+        self.button_box.layout().addWidget(self.clr_all)
+        self.button_box.layout().addWidget(update_btn)
+
+        self.fms_widget.layout().addWidget(self.search_wigdet)
+        self.fms_widget.layout().addWidget(self.button_box)
+
+        self.action_box.layout().addWidget(self.info_widget)
+        self.action_box.layout().addWidget(self.fms_widget)
+
         frame2.layout().addWidget(self.image_gallery)
         frame2.layout().addWidget(self.action_box)
+
+    def browse_directory(self, line_edit):
+        """
+        looks for the target directory where images are to be tagged
+        :parameter line_edit: QLineEdit where text will be displayed
+        :return directory_path: abs path of the directory
+        """
+
+        directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
+        if directory_path:
+            line_edit.setText(directory_path)
+            return directory_path
+    def search_tags(self, text: str):
+        """
+        Alternative to clicking tags, Searches for tags based on text.
+        Filtering is based on the text output section of the tagger.
+        This is accessed by the TEXT user role ie: item.data(TEXT)
+        :parameter text: string of tags to filter by
+        """
+
+        if text == "":
+            return
+        tags = [tag.strip() for tag in text.split(',')]
+        regex_pattern = "(?=.*{})".format(")(?=.*".join(tags))  # Regex for selecting things with all tags
+        # Create QRegularExpression object
+        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
+
+        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
+        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
+
+    def filter_images(self):
+        """
+        Display images with the following tags.
+        Filtering is based on the text output section of the tagger.
+        This is accessed by the TEXT user role ie: item.data(TEXT)
+        """
+
+        # get all tags and remove (number)
+        selected_tags = [
+            item.text().split("   ", 1)[1].strip()
+            for item in self.tag_list.selectedItems()
+        ]
+        regex_pattern = "(?=.*{})".format(")(?=.*".join(selected_tags))  # Regex for selecting things with all tags
+
+        # Create QRegularExpression object
+        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
+
+        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
+        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
 
     def get_results(self):
         """Used to populate file manager, loads tags from tagger and sets the model for displaying images"""
@@ -131,43 +227,8 @@ class FileManager(QWidget):
         self.search_completer = MultiCompleter(self.tagger.tag_count.keys())
         self.searchbar.setCompleter(self.search_completer)
 
-    def search_tags(self, text: str):
-        """
-        Alternative to clicking tags, Searches for tags based on text.
-        Filtering is based on the text output section of the tagger.
-        This is accessed by the TEXT user role ie: item.data(TEXT)
-        :parameter text: string of tags to filter by
-        """
-
-        if text == "":
-            return
-        tags = [tag.strip() for tag in text.split(',')]
-        regex_pattern = "(?=.*{})".format(")(?=.*".join(tags))  # Regex for selecting things with all tags
-        # Create QRegularExpression object
-        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
-
-        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
-        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
-
-    def filter_images(self):
-        """
-        Display images with the following tags.
-        Filtering is based on the text output section of the tagger.
-        This is accessed by the TEXT user role ie: item.data(TEXT)
-        """
-
-        # get all tags and remove (number)
-        selected_tags = [
-            item.text().split("   ", 1)[1].strip()
-            for item in self.tag_list.selectedItems()
-        ]
-        regex_pattern = "(?=.*{})".format(")(?=.*".join(selected_tags))  # Regex for selecting things with all tags
-
-        # Create QRegularExpression object
-        regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
-
-        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
-        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
+    def move_selected(self, files):
+        pass
 
 
 class MultiCompleter(QCompleter):
@@ -205,8 +266,9 @@ class ThumbnailDelegate(QStyledItemDelegate):
             option.features &= ~option.HasCheckIndicator
 
 
-# Custom delegate for displaying larger item with larger text
 class TagListItemDelegate(QStyledItemDelegate):
+    """ Custom delegate for displaying larger item with larger text"""
+
     def sizeHint(self, option, index):
         # Customize the size of items
         return QSize(100, 25)  # Adjust the width and height as needed
