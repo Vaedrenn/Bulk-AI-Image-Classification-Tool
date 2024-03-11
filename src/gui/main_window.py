@@ -17,6 +17,7 @@ TAG_STATE = Qt.UserRole + 5
 
 
 class MainWindow(QMainWindow):
+    """ Main Window for the application, Holds a QTabWidget with the tagger and file manager"""
     def __init__(self):
         super().__init__()
 

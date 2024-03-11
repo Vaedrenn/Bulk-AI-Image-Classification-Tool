@@ -93,8 +93,9 @@ class FileManager(QWidget):
         frame2.layout().addWidget(self.image_gallery)
         frame2.layout().addWidget(self.action_box)
 
-    # used to populate file manager
     def get_results(self):
+        """Used to populate file manager, loads tags from tagger and sets the model for displaying images"""
+
         list_widget = self.tagger.filelist
         if list_widget.count() == 0:
             return
@@ -103,31 +104,41 @@ class FileManager(QWidget):
         self.tag_list.clear()
         tag_count = self.tagger.tag_count
 
-        # Items to exclude
-        excluded_items = {"rating:safe": 0, "rating:questionable": 0, "rating:explicit": 0}
+        # We want to place rating information at the top of tag list
+        ratings = {"rating:safe": 0, "rating:questionable": 0, "rating:explicit": 0}
 
         # Sort and add excluded items
-        for key, value in sorted(excluded_items.items(), key=lambda item: item[1], reverse=True):
-            count = tag_count.pop(key)
-            val = f"({count})   {key}"
-            self.tag_list.addItem(val)
+        for key, value in ratings.items():
+            if key in tag_count:
+                count = tag_count.pop(key)
+                val = f"({count})   {key}"
+                self.tag_list.addItem(val)
 
         # Sort and add remaining items
         for key, value in sorted(tag_count.items(), key=lambda item: item[1], reverse=True):
-            val = f"({value})   {key}"
-            self.tag_list.addItem(val)
+            if key in tag_count:
+                val = f"({value})   {key}"
+                self.tag_list.addItem(val)
 
-        # Update tag_count with excluded items
-        tag_count.update(excluded_items)
+        # Add ratings back in for the completer
+        tag_count.update(ratings)
         self.load_tagger_info()
 
-    # Reloads changes from tagger, loads images and tags.
     def load_tagger_info(self):
+        """ Reloads changes from tagger, loads images and tags."""
+
         self.proxy_model.setSourceModel(self.tagger.results)
         self.search_completer = MultiCompleter(self.tagger.tag_count.keys())
         self.searchbar.setCompleter(self.search_completer)
 
     def search_tags(self, text: str):
+        """
+        Alternative to clicking tags, Searches for tags based on text.
+        Filtering is based on the text output section of the tagger.
+        This is accessed by the TEXT user role ie: item.data(TEXT)
+        :parameter text: string of tags to filter by
+        """
+
         if text == "":
             return
         tags = [tag.strip() for tag in text.split(',')]
@@ -138,8 +149,13 @@ class FileManager(QWidget):
         self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
         self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
 
-    # Display images with the following tags.
     def filter_images(self):
+        """
+        Display images with the following tags.
+        Filtering is based on the text output section of the tagger.
+        This is accessed by the TEXT user role ie: item.data(TEXT)
+        """
+
         # get all tags and remove (number)
         selected_tags = [
             item.text().split("   ", 1)[1].strip()
@@ -155,6 +171,8 @@ class FileManager(QWidget):
 
 
 class MultiCompleter(QCompleter):
+    """ Multi Tag completer, allows for comma separated tag searching"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setMaxVisibleItems(5)
@@ -172,8 +190,9 @@ class MultiCompleter(QCompleter):
         return [path.split(',')[-1].strip()]
 
 
-# Custom delegate for displaying images, removes check box and names for better formatting
 class ThumbnailDelegate(QStyledItemDelegate):
+    """ Custom delegate for displaying images, removes check box and names for better formatting"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.displayRoleEnabled = False

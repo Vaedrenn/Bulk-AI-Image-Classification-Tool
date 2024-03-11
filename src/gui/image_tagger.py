@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLa
 
 from src.gui.CheckListWidget import CheckListWidget
 from src.gui.TupleCheckListWidget import TupleCheckListWidget
-from src.gui.action_box import actionbox
+from src.gui.action_box import ActionBox
 from src.gui.dark_palette import create_dark_palette
 
 FILE_PATH = Qt.UserRole
@@ -94,7 +94,7 @@ class ImageTagger(QWidget):
         self.image_label_layout.addWidget(self.image_label)
         self.image_label.setAlignment(Qt.AlignCenter)
 
-        self.action_box = actionbox(self, frame2)
+        self.action_box = ActionBox(self, frame2)
 
         self.text_output = QTextEdit()
         self.text_output.setPlaceholderText("Text Output")
@@ -145,7 +145,7 @@ class ImageTagger(QWidget):
         button_box.layout().addWidget(store_tags)
         button_box.layout().addWidget(b_select_all)
         button_box.layout().addWidget(b_clear)
-        #
+
         rating_label = QLabel("Content Rating")
         font = QFont()
         font.setPointSize(10)
@@ -179,8 +179,8 @@ class ImageTagger(QWidget):
         # self.setWindowTitle('Bulk AI Image Classification Tool')
         # self.show()
 
-    # Refreshes the contents of the page when a new image is selected
     def update_page(self):
+        """ Refreshes the contents of the page when a new image is selected """
         current_item = self.filelist.currentItem()
         rating = current_item.data(RATING)
         character_tags = current_item.data(CHARACTER_RESULTS)
@@ -194,8 +194,8 @@ class ImageTagger(QWidget):
         self.update_tags(self.general_tags, general_tags, tag_state)
         self.text_output.setText(text)
 
-    # Display image
     def update_image(self):
+        """ Changes the display image"""
         try:
             image_path = self.filelist.currentItem().data(FILE_PATH)
             pixmap = QPixmap(image_path)
@@ -212,8 +212,8 @@ class ImageTagger(QWidget):
         except Exception as e:
             print(e)
 
-    # Refreshes the tags in the given checklist
     def update_tags(self, checklist, tags, tag_state):
+        """ Refreshes the tags in the given checklist"""
         checklist.clear()
         if tags is None:
             return
@@ -221,8 +221,8 @@ class ImageTagger(QWidget):
             percentage = f"{value * 100:.2f}%"  # Format value as percentage
             checklist.addPair(tag_name, percentage, tag_state[tag_name])
 
-    # Saves the tags of the current image
     def update_tag_status(self):
+        """ Saves the check states of the current image"""
         if self.filelist.currentItem() is None:
             return
 
@@ -242,13 +242,19 @@ class ImageTagger(QWidget):
         current_item.setData(TEXT, text)
 
     def select_all_files(self):
+        """ Checks all files in the filelist """
         self.filelist.check_all()
 
     def clear_all_files(self):
+        """ Unchecks all files in the filelist """
         self.filelist.uncheck_all()
 
-    # Adds user tags to tag list, if the tag is found in the char labels add it there if not goes into general
     def add_tags(self, text):
+        """
+        Adds user tags to tag list, if the tag is found in the char labels add it there if not goes into general
+        You can add any tag you want here it does not have to be in labels.
+        Adding a tag here will not add it to labels, you would have to add it manually to the txt
+        """
         if self.filelist.currentItem() is None:
             return
         current = self.filelist.currentItem()
@@ -269,10 +275,12 @@ class ImageTagger(QWidget):
         self.update_page()
 
     def select_all_tags(self):
+        """ Checks all tags in general and character tags"""
         self.character_tags.check_all()
         self.general_tags.check_all()
 
     def clear_tags(self):
+        """ Unchecks all tags in general and character tags"""
         self.character_tags.uncheck_all()
         self.general_tags.uncheck_all()
 

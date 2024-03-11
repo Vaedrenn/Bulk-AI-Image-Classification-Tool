@@ -22,7 +22,8 @@ GENERAL_RESULTS = Qt.UserRole + 3
 TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
 
-class actionbox(QWidget):
+
+class ActionBox(QWidget):
     def __init__(self, main_widget, parent):
         super().__init__(parent)
         self.dir_input = None
@@ -105,26 +106,35 @@ class actionbox(QWidget):
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(
-            lambda : self.submit(self.dir_input.text(), general_threshold.value(), character_threshold.value()))
+            lambda: self.submit(self.dir_input.text(), general_threshold.value(), character_threshold.value()))
 
         one_image_button = QPushButton("Tag Current Image")
         selected_images_button = QPushButton("Tag Selected images")
-        one_image_button.clicked.connect(lambda : self.tag_image())
-        selected_images_button.clicked.connect(lambda : self.tag_selected_images())
+        one_image_button.clicked.connect(lambda: self.tag_image())
+        selected_images_button.clicked.connect(lambda: self.tag_selected_images())
 
         button_grid.addWidget(submit_button)
         button_grid.addWidget(one_image_button)
         button_grid.addWidget(selected_images_button)
 
-    # looks for the target directory where images are to be tagged
     def browse_directory(self, line_edit):
+        """
+        looks for the target directory where images are to be tagged
+        :parameter line_edit: QLineEdit where text will be displayed
+        :return directory_path: abs path of the directory
+        """
+
         directory_path = QFileDialog.getExistingDirectory(None, "Select Directory")
         if directory_path:
             line_edit.setText(directory_path)
             return directory_path
 
-    # Load model from directory for gui
-    def browse_model(self, line_edit):
+    def browse_model(self, line_edit) -> None:
+        """
+        Load model from directory for gui. Operation creates a new thread.
+        refer to ModelWorker for more info.
+        :parameter line_edit: QLineEdit where text will be displayed
+        """
         directory_path = QFileDialog.getExistingDirectory(None, "Select Model")
         if not directory_path:
             return
@@ -155,16 +165,25 @@ class actionbox(QWidget):
 
             self.thread.start()
 
-    # utility function for loading models and tags
-    def _load_results(self, results):
+    def _load_results(self, results) -> None:
+        """
+        Helper function for loading models and tags. ALso sets the model for completer
+        :parameter results: model, labels, and character labels to be loaded
+        """
         model, labels, char_labels = results
         self.main_widget.model = model
         self.main_widget.labels = labels
         self.main_widget.char_labels = char_labels
         self.main_widget.t_completer.setModel(QStringListModel(self.main_widget.labels))  # update tag completer
 
-    # Tags all images in the directory
-    def submit(self, directory, general_threshold, char_threshold):
+    def submit(self, directory: str, general_threshold: int, char_threshold: int) -> None:
+        """
+        Predicts tags for all images in the directory. Does not go into subdirectories.
+
+        :param char_threshold: limit to what to tag if prob > threshold then write that tag
+        :param general_threshold: limit to what to tag if prob > threshold then write that tag
+        :param directory: directory to target
+        """
         if self.main_widget.model is None or directory is None or directory == '':
             print("No model found")
             return
@@ -208,15 +227,26 @@ class actionbox(QWidget):
 
         self.thread.start()
 
-    def _set_max(self, maximum):
+    def _set_max(self, maximum) -> None:
+        """
+        Helper function for setting the bar for progress dialog
+        @param maximum: how many steps to take
+        """
         self.pd.setLabelText("Predicting Tags")
         self.pd.setMaximum(maximum)
 
-    def _update_progress(self, val):
+    def _update_progress(self, val) -> None:
+        """
+        Helper function for setting the bar for progress dialog
+        @param val: increment progress bar by this
+        """
         self.pd.setValue(self.pd.value() + val)
 
-    # process results and refresh the page
     def process_results(self, result_count):
+        """
+        Processes results into the GUI and refreshes the page
+        :param result_count: results of predictions, and count of tags
+        """
         results, count = result_count
         if len(results) == 0 or None:
             QMessageBox.information(self, "No results", "No results within threshold")
@@ -260,8 +290,11 @@ class actionbox(QWidget):
         self.main_widget.filelist.setCurrentRow(0)
         self.main_widget.update_page()
 
-    # Tags just one image
     def tag_image(self):
+        """
+        Write tags to image's exif
+        :return: True if successful, False if labels or model is missing
+        """
         if not self.main_widget.model:
             return False
         if not self.main_widget.labels:
@@ -272,8 +305,13 @@ class actionbox(QWidget):
         image_path = current_image.data(FILE_PATH)
         write_tags(image_path, info)
 
-    # Writes tags to exif for all selected images
+        return True
+
     def tag_selected_images(self):
+        """
+        Write tags to image's exif for all selected images
+        :return: True if successful, False if labels or model is missing
+        """
         if not self.main_widget.model:
             return False
         if not self.main_widget.labels:
@@ -287,8 +325,10 @@ class actionbox(QWidget):
             write_tags(image_path, info)
 
 
-# Worker Object for qthreading, loads models and tags from directory
 class ModelWorker(QObject):
+    """
+     Worker Object for qthreading, loads models and tags from directory
+    """
     finished = pyqtSignal(tuple)
 
     def __init__(self, directory_path):
@@ -302,8 +342,10 @@ class ModelWorker(QObject):
         self.finished.emit((model, labels, char_labels))
 
 
-# Worker Object for qthreading, predicts all
 class ImageWorker(QObject):
+    """
+    Worker Object for qthreading, calls predicts all
+    """
     finished = pyqtSignal()
     cancelled = pyqtSignal(bool)
     max = pyqtSignal(int)
@@ -337,8 +379,12 @@ class ImageWorker(QObject):
         self.finished.emit()
 
 
-# Faster implementation of ImageWorker, uses significantly more computing power
 class PredictWorker(QObject):
+    """
+    Worker Object for qthreading, calls predicts all.
+    Faster implementation of ImageWorker, uses significantly more computing power
+    Tensorflow: GPU not supported on Windows unless used with WSL
+    """
     finished = pyqtSignal()
     max = pyqtSignal(int)
     results = pyqtSignal(tuple)
