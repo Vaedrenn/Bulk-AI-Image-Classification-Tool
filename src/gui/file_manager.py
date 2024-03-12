@@ -89,12 +89,12 @@ class FileManager(QWidget):
         self.image_gallery.setSelectionMode(QAbstractItemView.ExtendedSelection)  # ctrl and shift click selection
         self.image_gallery.setIconSize(QSize(400, 200))
         self.image_gallery.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
-
+        self.image_gallery.clicked.connect(self.display_info)
         # Action Box
         self.action_box = QGroupBox()
         self.action_box.setLayout(QHBoxLayout())
         self.action_box.setMaximumHeight(300)
-        self.action_box.setContentsMargins(0,0,0,0)
+        self.action_box.setContentsMargins(0, 0, 0, 0)
 
         # info_widget: This is where file information will go
         self.info_widget.setLayout(QVBoxLayout())
@@ -151,6 +151,7 @@ class FileManager(QWidget):
         if directory_path:
             line_edit.setText(directory_path)
             return directory_path
+
     def search_tags(self, text: str):
         """
         Alternative to clicking tags, Searches for tags based on text.
@@ -188,6 +189,10 @@ class FileManager(QWidget):
 
         self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
         self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
+
+    def display_info(self, info):
+        self.file_name.setText(info.data(FILE_PATH))
+        self.file_tags.setText(info.data(TEXT))
 
     def get_results(self):
         """Used to populate file manager, loads tags from tagger and sets the model for displaying images"""
