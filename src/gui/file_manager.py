@@ -1,3 +1,6 @@
+import os
+import shutil
+
 from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
     QCompleter, QListWidget, QAbstractItemView, QListView, QStyledItemDelegate, QTextEdit, QGridLayout, QFileDialog, \
@@ -27,7 +30,7 @@ class FileManager(QWidget):
         self.file_tags = QTextEdit()
         self.info_widget = QGroupBox()
 
-        self.image_gallery = None
+        self.image_gallery = QListView()
         self.action_box = None
         self.filelist = None
 
@@ -80,7 +83,6 @@ class FileManager(QWidget):
         frame1.layout().addWidget(deselect_all)
 
         # Frame 2
-        self.image_gallery = QListView()
         delegate = ThumbnailDelegate()
         self.image_gallery.setItemDelegate(delegate)
         self.image_gallery.setModel(self.proxy_model)  # set proxy model for filtering
@@ -121,7 +123,8 @@ class FileManager(QWidget):
         self.move_btn = QPushButton("Move Selected")
         self.slt_all = QPushButton("Select All")
         self.clr_all = QPushButton("Clear Selected")
-        self.move_btn.clicked.connect(lambda: self.move_selected(self.image_gallery.selectedIndexes()))
+        self.move_btn.clicked.connect(lambda:self.move_selected(self.image_gallery.selectedIndexes(),
+                                                            self.target_dir.text()))
         self.slt_all.clicked.connect(lambda: self.image_gallery.selectAll())
         self.clr_all.clicked.connect(lambda: self.image_gallery.clearSelection())
         update_btn = QPushButton("Import From Tagger")
@@ -236,8 +239,23 @@ class FileManager(QWidget):
         self.search_completer = MultiCompleter(self.tagger.tag_count.keys())
         self.searchbar.setCompleter(self.search_completer)
 
-    def move_selected(self, files):
-        pass
+    def move_selected(self, files, target_dir):
+        if target_dir == '':
+            return
+        # Create the target directory if it doesn't exist
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
+        # Move each file to the target directory
+        for f in files:
+            file_path = f.data(FILE_PATH)
+            # Extract the filename from the file path
+            file_name = os.path.basename(file_path)
+            # Construct the destination path
+            destination_path = os.path.join(target_dir, file_name)
+            # Move the file
+            self.proxy_model.setData(f, destination_path, FILE_PATH, )  # Update the file path data for the item
+            shutil.move(file_path, destination_path)
 
 
 class MultiCompleter(QCompleter):
