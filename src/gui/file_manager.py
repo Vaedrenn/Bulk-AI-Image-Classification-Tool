@@ -190,9 +190,13 @@ class FileManager(QWidget):
         self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
         self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
 
-    def display_info(self, info):
-        self.file_name.setText(info.data(FILE_PATH))
-        self.file_tags.setText(info.data(TEXT))
+    def display_info(self, item):
+        """
+        Display file information in action box
+        :param item: item in the model, item holds file path and tag info
+        """
+        self.file_name.setText(item.data(FILE_PATH))
+        self.file_tags.setText(item.data(TEXT))
 
     def get_results(self):
         """Used to populate file manager, loads tags from tagger and sets the model for displaying images"""

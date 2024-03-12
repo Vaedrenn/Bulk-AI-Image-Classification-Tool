@@ -5,7 +5,7 @@ import numpy as np
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QStringListModel
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog
+from PyQt5.QtWidgets import QListWidgetItem, QProgressDialog, QGroupBox
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGridLayout, \
     QLineEdit, QSlider, QSpinBox, QFileDialog, QMessageBox
 
@@ -23,7 +23,7 @@ TEXT = Qt.UserRole + 4
 TAG_STATE = Qt.UserRole + 5
 
 
-class ActionBox(QWidget):
+class ActionBox(QGroupBox):
     def __init__(self, main_widget, parent):
         super().__init__(parent)
         self.dir_input = None
@@ -37,10 +37,10 @@ class ActionBox(QWidget):
         action_layout = QVBoxLayout()
         self.setLayout(action_layout)
 
-        selection_frame = QWidget()
-        slider_frame = QWidget()
-        button_frame = QWidget()
-        output_frame = QWidget()
+        selection_frame = QGroupBox()
+        slider_frame = QGroupBox()
+        button_frame = QGroupBox()
+        output_frame = QGroupBox()
 
         selection_grid = QGridLayout()
         slider_grid = QGridLayout()
