@@ -92,6 +92,7 @@ class FileManager(QWidget):
         self.image_gallery.setIconSize(QSize(400, 200))
         self.image_gallery.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
         self.image_gallery.clicked.connect(self.display_info)
+
         # Action Box
         self.action_box = QGroupBox()
         self.action_box.setLayout(QHBoxLayout())
@@ -109,17 +110,22 @@ class FileManager(QWidget):
 
         self.fms_widget = QGroupBox()
         self.fms_widget.setLayout(QGridLayout())
+        self.fms_widget.setContentsMargins(0, 0, 0, 0)
 
-        self.search_wigdet = QGroupBox()
+        self.search_wigdet = QWidget()
         self.search_wigdet.setLayout(QHBoxLayout())
         self.target_dir = QLineEdit()
+        self.target_dir.setPlaceholderText("Folder to move selected images to...")
         self.browse_btn = QPushButton("Browse")
         self.browse_btn.clicked.connect(lambda: self.browse_directory(self.target_dir))
         self.search_wigdet.layout().addWidget(self.target_dir)
         self.search_wigdet.layout().addWidget(self.browse_btn)
+        self.search_wigdet.setMaximumHeight(50)
+        self.search_wigdet.layout().setContentsMargins(0,0,0,0)
 
         self.button_box = QGroupBox()
         self.button_box.setLayout(QHBoxLayout())
+        self.button_box.layout().setAlignment(Qt.AlignTop)
         self.move_btn = QPushButton("Move Selected")
         self.slt_all = QPushButton("Select All")
         self.clr_all = QPushButton("Clear Selected")
@@ -127,12 +133,13 @@ class FileManager(QWidget):
                                                             self.target_dir.text()))
         self.slt_all.clicked.connect(lambda: self.image_gallery.selectAll())
         self.clr_all.clicked.connect(lambda: self.image_gallery.clearSelection())
-        update_btn = QPushButton("Import From Tagger")
-        update_btn.clicked.connect(self.get_results)
-        self.button_box.layout().addWidget(self.move_btn)
+        self.update_btn = QPushButton("Get Data")
+        self.update_btn.clicked.connect(self.get_results)
+
+        self.button_box.layout().addWidget(self.update_btn)
         self.button_box.layout().addWidget(self.slt_all)
         self.button_box.layout().addWidget(self.clr_all)
-        self.button_box.layout().addWidget(update_btn)
+        self.button_box.layout().addWidget(self.move_btn)
 
         self.fms_widget.layout().addWidget(self.search_wigdet)
         self.fms_widget.layout().addWidget(self.button_box)
