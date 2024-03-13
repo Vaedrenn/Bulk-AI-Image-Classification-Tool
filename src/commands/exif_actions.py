@@ -35,6 +35,4 @@ def read_exif(image_path):
         for tag, value in exif_data.items():
             # Look for the tag corresponding to "ImageDescription"
             if TAGS.get(tag) == "ImageDescription":
-                # Print out value for "ImageDescription"
-                print(f"ImageDescription: {value}")
-                break  # Stop iteration once ImageDescription tag is found
+                return value

@@ -247,6 +247,12 @@ class FileManager(QWidget):
         self.searchbar.setCompleter(self.search_completer)
 
     def move_selected(self, files, target_dir):
+        """
+        Moves Files to target directory
+        :param files: Indexes of files to be moved
+        :param target_dir: folder to move files to
+        :return: None
+        """
         if target_dir == '':
             return
         # Create the target directory if it doesn't exist
@@ -270,7 +276,7 @@ class MultiCompleter(QCompleter):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMaxVisibleItems(5)
+        # self.setMaxVisibleItems(5)
 
     def pathFromIndex(self, index):
         path = super().pathFromIndex(index)
