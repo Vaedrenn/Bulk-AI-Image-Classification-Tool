@@ -29,6 +29,8 @@ class ActionBox(QGroupBox):
         self.dir_input = None
         self.model_input = None
         self.main_widget = main_widget
+        self.model_button = QPushButton("Browse")
+        self.dir_button = QPushButton("Browse")
 
         self.images = []
         self.initUI()
@@ -60,16 +62,16 @@ class ActionBox(QGroupBox):
         self.model_input.setPlaceholderText("Select model directory...")
         self.dir_input = QLineEdit()
         self.dir_input.setPlaceholderText("Select directory...")
-        model_button = QPushButton("Browse")
-        dir_button = QPushButton("Browse")
+        self.model_button = QPushButton("Browse")
+        self.dir_button = QPushButton("Browse")
 
-        model_button.clicked.connect(lambda: self.browse_model(self.model_input))
-        dir_button.clicked.connect(lambda: self.browse_directory(self.dir_input))
+        self.model_button.clicked.connect(lambda: self.browse_model(self.model_input))
+        self.dir_button.clicked.connect(lambda: self.browse_directory(self.dir_input))
 
         selection_grid.addWidget(self.model_input, 0, 0)
-        selection_grid.addWidget(model_button, 0, 1)
+        selection_grid.addWidget(self.model_button, 0, 1)
         selection_grid.addWidget(self.dir_input, 1, 0)
-        selection_grid.addWidget(dir_button, 1, 1)
+        selection_grid.addWidget(self.dir_button, 1, 1)
 
         general_tag = QLabel("General Tags Threshold")
         character_tag = QLabel("Character Tags Threshold")
@@ -140,6 +142,9 @@ class ActionBox(QGroupBox):
             return
         else:
             line_edit.setText(directory_path)
+            self.load_models(directory_path)
+
+    def load_models(self, directory_path):
 
             self.pd = QProgressDialog("Loading Model...", None, 0, 0, self.main_widget)
             # Prevents the user from interacting with the gui until finished
