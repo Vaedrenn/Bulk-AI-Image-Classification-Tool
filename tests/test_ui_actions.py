@@ -10,7 +10,7 @@ def test_load_model(qtbot):
     """Test if the main window is initialized correctly."""
     # Create the main window, not to be confused with QMainWindow
     main_window = MainWindow()
-    directory_path = r"../models/deepdanbooru-v3-20211112-sgd-e28"
+    directory_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
 
     main_window.tab1.action_box.load_models(directory_path)
 
@@ -23,7 +23,7 @@ def test_load_model(qtbot):
 
 def test_submit(qtbot):
     main_window = MainWindow()
-    model_path = r"../models/deepdanbooru-v3-20211112-sgd-e28"
+    model_path = r"models/deepdanbooru-v3-20211112-sgd-e28"
     directory = r"tests/images"
 
     main_window.tab1.action_box.load_models(model_path)
