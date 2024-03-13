@@ -7,8 +7,14 @@ from PIL.ExifTags import TAGS
 from PIL.TiffImagePlugin import ImageFileDirectory_v2
 
 
-# Writes tags to exif, modified from Vladmanic's https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6087
 def write_tags(image_path: str, info: str):
+    """
+    Writes tags to exif, modified from Vladmanic's https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6087
+
+    :param image_path: file path of image
+    :param info: tags to write
+    :return: none
+    """
     # Open the image using PIL
     with Image.open(image_path) as img:
         ifd = ImageFileDirectory_v2()
@@ -23,6 +29,11 @@ def write_tags(image_path: str, info: str):
 
 
 def read_exif(image_path):
+    """
+    Reads tags from exif
+    :param image_path: file path of image
+    :return: tags
+    """
     # Open the image file
     image = Image.open(image_path)
 

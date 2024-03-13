@@ -5,9 +5,12 @@ import os
 import tensorflow as tf
 
 
-# loads the model from /models/
-# loading should be done before calling predict
 def load_model(model_path: str | os.path) -> tf.keras.Model:
+    """
+    Loads models model_path, should be called before using predict
+    :param model_path: file name
+    :return: returns the loaded model
+    """
     file_name = "model-resnet_custom_v3.h5"
     path = os.path.join(model_path, file_name)
 
@@ -26,6 +29,11 @@ def load_model(model_path: str | os.path) -> tf.keras.Model:
 
 # read tags
 def load_labels(model_path: str | os.path) -> list[str]:
+    """
+    Loads labels from  txt file
+    :param model_path: file name
+    :return: list of tags(labels)
+    """
     path = os.path.join(model_path, "tags.txt")
     try:
         with open(path) as f:
@@ -37,6 +45,11 @@ def load_labels(model_path: str | os.path) -> list[str]:
 
 
 def load_char_labels(model_path: str | os.path) -> set[str]:
+    """
+    Loads character labels from file
+    :param model_path: file name
+    :return: list of character tags (labels)
+    """
     path = os.path.join(model_path, "tags-character.txt")
     try:
         with open(path) as f:

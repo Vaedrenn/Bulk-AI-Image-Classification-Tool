@@ -11,9 +11,15 @@ from PIL import Image
 from PyQt5.QtCore import QRunnable, QThreadPool
 
 
-# Preprocesses images from directory using qt's multiprocessing model
 class Runnable(QRunnable):
+    """
+    Preprocesses images from directory using qt's multiprocessing model
+    :param image_path: file name
+    :param size: dimensions to resize to
+    :param preprocessed_images: return array
+    """
     def __init__(self, image_path, size, preprocessed_images):
+
         super().__init__()
         self.image_path = image_path
         self.size = size
@@ -39,9 +45,14 @@ class Runnable(QRunnable):
             print(f"Error processing {self.image_path}: {e}")
 
 
-#   Processes all images in a directory, does not go into subdirectories.
-#   Images need to be shaped before predict can be called on it.
 def process_images_from_directory(model: tf.keras.Model, directory: str | os.path) -> list[(str, np.ndarray)]:
+    """
+    Processes all images in a directory, does not go into subdirectories.
+    Images need to be shaped before predict can be called on it.
+    :param model: model, shape is used to resize of images
+    :param directory: directory of images to be precessed
+    :return: [(filename, ndarray)] returns a list of file names and processed images
+    """
     preprocessed_images = []
     image_filenames = os.listdir(directory)
     pool = QThreadPool.globalInstance()
@@ -59,7 +70,6 @@ def process_images_from_directory(model: tf.keras.Model, directory: str | os.pat
     return preprocessed_images
 
 
-# Predicts tags using TF
 def predict(
         model: tf.keras.Model,
         labels: list[str],
@@ -68,6 +78,17 @@ def predict(
         score_threshold: float = 0.5,
         char_threshold: float = 0.85
 ) -> tuple[dict[str, float], dict[str, float], dict[str, float], dict[str, float], str] | None:
+    """
+    Predicts tags for the image given the model and tags.
+    :param model: model to use
+    :param labels: general tags
+    :param char_labels: character tags
+    :param image: processed image
+    :param score_threshold: general tags, if the probability of the prediction is greater than this number add to tags
+    :param char_threshold: character tags, see above
+    :return: None if there are no tags within threshold otherwise returns:
+     result_threshold, result_all, result_rating, result_char, result_text
+    """
     try:
         # Make a prediction using the model
         probs = model.predict(image[None, ...])[0]
@@ -122,11 +143,6 @@ def predict(
         return None
 
 
-# Predicts all images in the directory
-# To unpack:
-#    for image in results:
-#        filename = image[0]
-#        threshold_results, all_results, rating_results, text = image[1]
 def predict_all(model: tf.keras.Model,
                 labels: list[str],
                 char_labels: list[str],
@@ -135,6 +151,17 @@ def predict_all(model: tf.keras.Model,
                 char_threshold: float = 0.85
                 ) -> (
         list[tuple[Any, tuple[dict[str, float], dict[str, float], dict[str, float], dict[str, float], str]]] | None):
+    """
+    Calls process_images_from_directory and predict on all images in the folder
+    :param model: model to use
+    :param labels: general tags
+    :param char_labels: character tags
+    :param directory: folder to process
+    :param score_threshold: general tags, if the probability of the prediction is greater than this number add to tags
+    :param char_threshold: character tags, see above
+    :return:     :return: None if there are no tags within threshold otherwise returns:
+     [(filename, (result_threshold, result_all, result_rating, result_char, result_text))]
+    """
     images = process_images_from_directory(model, directory)
     processed_images = []
     for image in images:
