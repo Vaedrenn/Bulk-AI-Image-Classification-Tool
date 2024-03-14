@@ -10,7 +10,7 @@ An image tagger based on deepdanbooru AI
 + Windows 10/11
 + 3GB+ of RAM
 ### Installation on Windows 10/11 using release package
-https://github.com/Vaedrenn/Bulk-AI-Image-Classification-Tool/releases/tag/0.1.0
+https://github.com/Vaedrenn/Bulk-AI-Image-Classification-Tool/releases
 
 ### Building from source
 Assuming you've already set up the virtual environment
@@ -32,7 +32,7 @@ Download: https://github.com/KichangKim/DeepDanbooru/releases
 ### Custom Models
 For the time being models should be in the following format:
 ```
-/dd-image-tagger/
+/Bulk-AI-Image-Classification-Tool/
 └── /models/
     └── /model_name/
         ├── model-resnet_custom_v3.h5 (required)
@@ -40,3 +40,16 @@ For the time being models should be in the following format:
         └── tags-character.txt (optional)
 ```
 - Models and tags are loaded via action_box's load_model and load_tags function, which look for the above files respectively
+## Usage
+### Generating Tags
+1. Load model using the browse button located at next to the input that says model.
+2. Specify folder path, does not tag subdirectories.
+3. Specify threshold limits. Tags are based on probability of correctness, if probability is greater than threshold then that tag is added to results. This is based on the model provided.
+4. Click Submit to generate tags for all images.
+
+### Editing Tags
+#### Adding tags
+- Don't see a tag in results? Type it in the add tag box and hit enter.
+#### Removing Tags
+- Uncheck the tag you don't want and then click 'Save Changes'
+
