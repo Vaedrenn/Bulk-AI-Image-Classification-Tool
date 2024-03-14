@@ -77,7 +77,7 @@ class FileManager(QWidget):
         self.tag_list.setItemDelegate(tl_delegate)
 
         deselect_all = QPushButton("Deselect All")
-        deselect_all.clicked.connect(self.tag_list.clearSelection)
+        deselect_all.clicked.connect(self.clear_filter)
 
         frame1.layout().addWidget(search_box)
         frame1.layout().addWidget(self.tag_list)
@@ -198,6 +198,17 @@ class FileManager(QWidget):
 
         # Create QRegularExpression object
         regex = QRegularExpression(regex_pattern, QRegularExpression.CaseInsensitiveOption)
+
+        self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
+        self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
+
+    def clear_filter(self):
+        """
+        clears filters
+        """
+        self.tag_list.clearSelection()
+        # Create QRegularExpression object
+        regex = QRegularExpression('', QRegularExpression.CaseInsensitiveOption)
 
         self.proxy_model.setFilterRole(TEXT)  # Filter by TEXT role, each item comes with a string of all checked tags
         self.proxy_model.setFilterRegularExpression(regex)  # Apply filter
