@@ -42,10 +42,11 @@ For the time being models should be in the following format:
 - Models and tags are loaded via action_box's load_model and load_tags function, which look for the above files respectively
 ## Usage
 ### Generating Tags
+#### Warning: once you submit it **cannot** be cancelled.
 1. Load model using the browse button located at next to the input that says model.
 2. Specify folder path, does not tag subdirectories.
 3. Specify threshold limits. Tags are based on probability of correctness, if probability is greater than threshold then that tag is added to results. This is based on the model provided.
-4. Click Submit to generate tags for all images.
+4. Click Submit to generate tags for all images. 
 
 ### Editing Tags
 #### Adding tags
