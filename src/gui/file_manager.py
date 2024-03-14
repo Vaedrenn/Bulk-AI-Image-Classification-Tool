@@ -1,7 +1,8 @@
 import os
 import shutil
 
-from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression
+from PyQt5.QtCore import Qt, QSize, QSortFilterProxyModel, QRegularExpression, QUrl
+from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QStyleFactory, QPushButton, QLineEdit, \
     QCompleter, QListWidget, QAbstractItemView, QListView, QStyledItemDelegate, QTextEdit, QGridLayout, QFileDialog, \
     QGroupBox
@@ -92,6 +93,7 @@ class FileManager(QWidget):
         self.image_gallery.setIconSize(QSize(400, 200))
         self.image_gallery.setResizeMode(QListWidget.Adjust)  # Reorganize thumbnails on resize
         self.image_gallery.clicked.connect(self.display_info)
+        self.image_gallery.doubleClicked.connect(self.open_image)
 
         # Action Box
         self.action_box = QGroupBox()
@@ -269,6 +271,19 @@ class FileManager(QWidget):
             # Move the file
             self.proxy_model.setData(f, destination_path, FILE_PATH, )  # Update the file path data for the item
             shutil.move(file_path, destination_path)
+
+    def open_image(self, item):
+        """
+        Display Open image in image explorer
+        :param item: item in the model, item holds file path and tag info
+        """
+        try:
+            file_path = item.data(FILE_PATH)
+            if file_path:
+                QDesktopServices.openUrl(QUrl.fromLocalFile(file_path))
+
+        except Exception as e:
+            print(e)
 
 
 class MultiCompleter(QCompleter):
