@@ -8,7 +8,7 @@ An image tagger based on deepdanbooru AI
 ### Prerequisites
 + Python 3.9 - 3.11
 + Windows 10/11
-+ 3GB+ of RAM
++ 6GB+ of RAM
 ### Installation on Windows 10/11 using release package
 https://github.com/Vaedrenn/Bulk-AI-Image-Classification-Tool/releases
 
@@ -52,4 +52,7 @@ For the time being models should be in the following format:
 - Don't see a tag in results? Type it in the add tag box and hit enter.
 #### Removing Tags
 - Uncheck the tag you don't want and then click 'Save Changes'
+#### Writing Tags to Exif
+- Tag current image: writes tags to the currently displayed image
+- Tag selected images: writes tags to the all images checked in the filelist to the left
 
