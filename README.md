@@ -19,6 +19,7 @@ pip install -r requirements.txt
 pip install .
 python main.py
 ```
+Linux Troubleshooting: https://github.com/biolab/orange3/issues/5974#issuecomment-1134663073
 - As of 02/28/2024 tensorflow-io does not have a working package for python 3.12
 - Tensorflow no longer support GPUs on Windows as of Version 2.10
 ## Models
